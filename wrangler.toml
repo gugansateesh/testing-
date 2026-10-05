@@ -1,0 +1,8 @@
+name = "quantumrims-cloudflare"
+main = ".worker-next/index.mjs"
+compatibility_date = "2024-08-31"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".worker-next/assets"
+binding = "ASSETS"
