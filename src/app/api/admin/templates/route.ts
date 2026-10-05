@@ -21,11 +21,11 @@ export async function GET(req: NextRequest) {
 
   const admin = createAdminClient()
   const { searchParams } = new URL(req.url)
-  const module = searchParams.get('module')
+  const moduleName = searchParams.get('module')
 
   let query = admin.from('document_templates').select('*')
-  if (module) {
-    query = query.eq('module', module)
+  if (moduleName) {
+    query = query.eq('module', moduleName)
   }
 
   const { data, error } = await query
@@ -52,12 +52,12 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File
-    const module = formData.get('module') as string
+    const moduleName = formData.get('module') as string
     const doc_key = formData.get('doc_key') as string
     const doc_label = formData.get('doc_label') as string
     const version_label = formData.get('version_label') as string
 
-    if (!file || !module || !doc_key || !doc_label || !version_label) {
+    if (!file || !moduleName || !doc_key || !doc_label || !version_label) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -85,14 +85,14 @@ export async function POST(req: NextRequest) {
     await admin
       .from('document_templates')
       .update({ is_current: false })
-      .eq('module', module)
+      .eq('module', moduleName)
       .eq('doc_key', doc_key)
 
     // Insert new version
     const { data: newTemplate, error } = await admin
       .from('document_templates')
       .insert({
-        module,
+        module: moduleName,
         doc_key,
         doc_label,
         version_label,

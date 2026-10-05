@@ -12,16 +12,16 @@ export async function GET(req: NextRequest) {
   const admin = createAdminClient()
 
   const { searchParams } = new URL(req.url)
-  const module = searchParams.get('module')
+  const moduleName = searchParams.get('module')
 
-  if (!module) {
+  if (!moduleName) {
     return NextResponse.json({ error: 'Missing module parameter' }, { status: 400 })
   }
 
   const { data, error } = await admin
     .from('document_templates')
     .select('doc_key, doc_label, version_label, file_url')
-    .eq('module', module)
+    .eq('module', moduleName)
     .eq('is_current', true)
 
   if (error) {
