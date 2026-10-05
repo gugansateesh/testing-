@@ -5,7 +5,7 @@ import { deleteCloudinaryFile } from '@/lib/cloudinaryDelete'
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = extractToken(req)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -17,7 +17,7 @@ export async function DELETE(
   if (!isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const admin = createAdminClient()
-  const { id } = params
+  const { id } = await params
   
   const { searchParams } = new URL(req.url)
   const confirmOnlyVersion = searchParams.get('confirm_only_version') === 'true'
@@ -79,7 +79,7 @@ export async function DELETE(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = extractToken(req)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -91,7 +91,7 @@ export async function PATCH(
   if (!isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const admin = createAdminClient()
-  const { id } = params
+  const { id } = await params
 
   // Fetch target template
   const { data: template, error: fetchError } = await admin
