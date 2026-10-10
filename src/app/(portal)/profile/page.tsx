@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { checkIncentiveEligibility } from '@/lib/incentiveEligibility'
 import { useFaculty } from '@/context/FacultyContext'
 import {
   User, FileText, Wallet, FlaskConical, TrendingUp, GraduationCap,
@@ -118,6 +119,7 @@ export default function ProfilePage() {
   const [submittingProfile, setSubmittingProfile] = useState(false)
   const [targetData, setTargetData] = useState<any>(null)
   const [targetLoading, setTargetLoading] = useState(true)
+  const [cutoffYear, setCutoffYear] = useState<number | undefined>(undefined)
   const [history, setHistory] = useState<any>(null)
   const [historyLoading, setHistoryLoading] = useState(true)
 
@@ -182,8 +184,11 @@ export default function ProfilePage() {
             headers: { Authorization: `Bearer ${session.access_token}` }
           })
             .then(res => res.json())
-            .then(data => {
-              if (!data.error) setHistory(data)
+                        .then(data => {
+              if (!data.error) {
+                setHistory(data)
+                if (data.cutoff_year) setCutoffYear(data.cutoff_year)
+              }
               setHistoryLoading(false)
             })
             .catch(() => setHistoryLoading(false))
@@ -199,15 +204,6 @@ export default function ProfilePage() {
   }, [faculty.emp_id])
 
   const modules = [
-    {
-      href: '/submit',
-      icon: FileText,
-      title: 'Research Paper Submission',
-      description: 'Submit your Scopus-indexed research publications to the institutional repository.',
-      buttonText: 'Submit paper →',
-      stat: stats.papers,
-      statLabel: 'APPROVED PAPERS',
-    },
     {
       href: '/incentive',
       icon: Wallet,
@@ -528,6 +524,7 @@ export default function ProfilePage() {
                       <th className="text-left py-2 px-3 text-xs font-bold text-slate-400 uppercase">Year</th>
                       <th className="text-left py-2 px-3 text-xs font-bold text-slate-400 uppercase">Type</th>
                       <th className="text-left py-2 px-3 text-xs font-bold text-slate-400 uppercase">DOI</th>
+                      <th className="text-right py-2 px-3 text-xs font-bold text-slate-400 uppercase">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
@@ -554,6 +551,45 @@ export default function ProfilePage() {
                               {pub.doi.substring(0, 20)}{pub.doi.length > 20 ? '…' : ''}
                             </a>
                           ) : <span className="text-slate-300">—</span>}
+                        </td>
+                                                <td className="py-3 px-3 text-right">
+                          {(() => {
+                            const existingApp = history?.incentives?.find((app: any) => 
+                              (pub.doi && app.submissions?.doi === pub.doi) || 
+                              (pub.title && app.submissions?.title === pub.title) ||
+                              (pub._source === 'live' && app.submissions?.id === pub.id)
+                            )
+                            const hasPendingOrApprovedApp = existingApp && ['pending', 'approved'].includes(existingApp.status)
+                            const existingStatus = existingApp ? existingApp.status : null
+
+                            const { eligible, reason } = checkIncentiveEligibility(pub, cutoffYear, hasPendingOrApprovedApp)
+
+                            if (hasPendingOrApprovedApp) {
+                              return <StatusBadge status={existingStatus} />
+                            }
+
+                            if (!eligible) {
+                              return (
+                                <div className="group relative inline-block text-right">
+                                  <button disabled className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-400 rounded-lg text-xs font-bold cursor-not-allowed whitespace-nowrap">
+                                    <Wallet className="w-3.5 h-3.5 opacity-50" /> Apply Incentive
+                                  </button>
+                                  <div className="absolute hidden group-hover:block bottom-full right-0 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] rounded shadow-xl z-10 whitespace-normal text-left">
+                                    {reason}
+                                  </div>
+                                  <div className="block sm:hidden text-[10px] text-red-500 mt-1 whitespace-normal">
+                                    {reason}
+                                  </div>
+                                </div>
+                              )
+                            }
+
+                            return (
+                              <Link href={`/incentive/apply?${pub._source === 'live' ? 'submission' : 'publication'}=${pub.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-bold transition-colors whitespace-nowrap">
+                                <Wallet className="w-3.5 h-3.5" /> Apply Incentive
+                              </Link>
+                            )
+                          })()}
                         </td>
                       </tr>
                     ))}

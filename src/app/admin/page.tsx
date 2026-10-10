@@ -1,4 +1,5 @@
-import AdminDashboardModule from '@/components/admin/AdminDashboardModule'
+import { redirect } from 'next/navigation'
+
 export default function SubmissionsPage() {
-  return <AdminDashboardModule module="submissions" />
+  redirect('/admin/analytics')
 }

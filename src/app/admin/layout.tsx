@@ -16,7 +16,6 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 
 
 const ADMIN_NAV = [
-  { href: '/admin', label: 'Paper Submissions', icon: FileText },
   { href: '/admin/incentive', label: 'Incentive Applications', icon: IndianRupee },
   { 
     href: '/admin/seed-fund', 

@@ -148,38 +148,6 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                   )
                 })}
 
-                {/* Research Paper Submission Dropdown (Desktop) */}
-                <div className="relative group h-full flex items-center">
-                  <button
-                    className={`relative flex items-center gap-1.5 xl:gap-2 px-2 xl:px-4 h-full text-xs xl:text-[13px] font-bold tracking-wide transition-colors ${
-                      pathname.startsWith('/submit') ? 'text-[#FDB813]' : 'text-blue-100 hover:text-white'
-                    }`}
-                  >
-                    <FileText className="w-4 h-4" />
-                    Research Paper Submission
-                    <ChevronDown className="w-3 h-3 ml-1 opacity-70 group-hover:opacity-100" />
-                    {pathname.startsWith('/submit') && (
-                      <div className="absolute bottom-0 left-0 w-full h-[4px] bg-[#FDB813] rounded-t-full shadow-[0_-2px_10px_rgba(253,184,19,0.5)]" />
-                    )}
-                  </button>
-
-                  <div className="absolute top-full left-0 w-56 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden py-2 flex flex-col">
-                      <Link href="/submit"
-                        className={`w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition-colors text-left ${
-                          pathname === '/submit' ? 'text-[#0A3D8F] bg-blue-50' : 'text-slate-600 hover:bg-blue-50 hover:text-[#0A3D8F]'
-                        }`}>
-                        Submit Paper
-                      </Link>
-                      <Link href="/submit/history"
-                        className={`w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition-colors text-left ${
-                          pathname === '/submit/history' ? 'text-[#0A3D8F] bg-blue-50' : 'text-slate-600 hover:bg-blue-50 hover:text-[#0A3D8F]'
-                        }`}>
-                        Submission History
-                      </Link>
-                    </div>
-                  </div>
-                </div>
 
                 {NAV_ITEMS.slice(1, 3).map(item => {
                   const active = isActive(item)
@@ -398,23 +366,6 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                   My Profile
                 </Link>
 
-                <div className="px-4 py-2">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Research Paper Submission</p>
-                  <div className="flex flex-col gap-1 pl-2 border-l-2 border-slate-100">
-                    <Link href="/submit" onClick={() => setMobileMenuOpen(false)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg font-bold text-sm transition-colors text-left ${
-                        pathname === '/submit' ? 'text-[#0A3D8F] bg-blue-50' : 'text-slate-500 hover:text-slate-800 hover:bg-blue-50'
-                      }`}>
-                      Submit Paper
-                    </Link>
-                    <Link href="/submit/history" onClick={() => setMobileMenuOpen(false)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg font-bold text-sm transition-colors text-left ${
-                        pathname === '/submit/history' ? 'text-[#0A3D8F] bg-blue-50' : 'text-slate-500 hover:text-slate-800 hover:bg-blue-50'
-                      }`}>
-                      Submission History
-                    </Link>
-                  </div>
-                </div>
 
                 {NAV_ITEMS.slice(1, 3).map(item => {
                   const active = isActive(item)

@@ -4,10 +4,14 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
-  Loader2, IndianRupee, FileText, ChevronRight, AlertCircle, Info, CheckCircle
+  Loader2, IndianRupee, FileText, ChevronRight, AlertCircle, Info, CheckCircle, User
 } from 'lucide-react'
 import { calculateIncentive } from '@/lib/incentive'
 import { incentiveRules } from '@/lib/incentiveRules'
+import { checkIncentiveEligibility } from '@/lib/incentiveEligibility'
+import { uploadFile as cloudUpload } from '@/lib/uploadFile'
+import PublicationDetailsForm from '@/components/PublicationDetailsForm'
+import { Upload } from 'lucide-react'
 
 const inputClass = 'w-full rounded-xl border-slate-200 bg-blue-50/50 px-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 shadow-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all duration-200 font-medium border'
 
@@ -27,12 +31,23 @@ function IncentiveApplyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const submissionId = searchParams.get('submission')
+  const legacyPublicationId = searchParams.get('publication')
 
   const [loading, setLoading] = useState(true)
   const [submissionData, setSubmissionData] = useState<any>(null)
+  const [facultyDetails, setFacultyDetails] = useState<{name: string, dept: string} | null>(null)
+  const [ineligibleReason, setIneligibleReason] = useState<string | null>(null)
   
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+
+  const [fileStates, setFileStates] = useState<Record<string, { name: string; size: string; error?: string }>>({})
+  const hasFileError = Object.values(fileStates).some(f => f.error)
+
+  const uploadFile = async (file: File | null, _submissionId: string, _key: string): Promise<string | undefined> => {
+    if (!file || file.size === 0) return undefined
+    return cloudUpload(file, 'paper-proofs')
+  }
 
   const [category, setCategory] = useState('sci_journal')
   const [authorCount, setAuthorCount] = useState<string>('')
@@ -49,7 +64,7 @@ function IncentiveApplyContent() {
 
   useEffect(() => {
     async function loadData() {
-      if (!submissionId) {
+      if (!submissionId && !legacyPublicationId) {
         router.replace('/profile')
         return
       }
@@ -59,44 +74,151 @@ function IncentiveApplyContent() {
         return
       }
 
-      const { data, error } = await supabase
-        .from('submissions')
-        .select('*')
-        .eq('id', submissionId)
-        .single()
+      let paperData = null
 
-      if (error || !data || data.submitted_by !== session.user.id || data.status !== 'approved') {
+      if (submissionId) {
+        const { data, error } = await supabase
+          .from('submissions')
+          .select('*')
+          .eq('id', submissionId)
+          .single()
+
+        if (error || !data || data.submitted_by !== session.user.id || data.status !== 'approved') {
+          router.replace('/profile')
+          return
+        }
+        paperData = data
+        
+        const { data: fac } = await supabase.from('master_faculty').select('name, dept').eq('user_id', session.user.id).single()
+        if (fac) setFacultyDetails(fac)
+
+        const { data: existingApp } = await supabase
+          .from('incentive_applications')
+          .select('*')
+          .eq('submission_id', submissionId)
+          .single()
+
+        if (existingApp && existingApp.status !== 'rejected') {
+          router.replace('/profile')
+          return
+        }
+
+        if (existingApp && existingApp.status === 'rejected') {
+          setCategory(existingApp.category)
+          if (existingApp.author_count) setAuthorCount(existingApp.author_count.toString())
+          if (existingApp.author_position) setAuthorPosition(existingApp.author_position.toString())
+          if (existingApp.impact_factor) setImpactFactor(existingApp.impact_factor.toString())
+          if (existingApp.journal_quartile) setJournalQuartile(existingApp.journal_quartile)
+          setSelfCitationCount(existingApp.self_citation_count.toString())
+          if (existingApp.h_index) setHIndex(existingApp.h_index.toString())
+          if (existingApp.publisher_tier) setPublisherTier(existingApp.publisher_tier)
+          if (existingApp.book_type) setBookType(existingApp.book_type)
+          if (existingApp.patent_type) setPatentType(existingApp.patent_type)
+          setPatentFormsConfirmed(existingApp.patent_forms_confirmed)
+          if (existingApp.citation_count) setCitationCount(existingApp.citation_count.toString())
+        }
+      } else if (legacyPublicationId) {
+        const { data: faculty, error: facultyError } = await supabase
+          .from('master_faculty')
+          .select('emp_id, name, dept')
+          .eq('user_id', session.user.id)
+          .single()
+
+        if (faculty) setFacultyDetails({name: faculty.name, dept: faculty.dept})
+        if (facultyError || !faculty?.emp_id) {
+          setIneligibleReason("User is not mapped to a faculty record.")
+          setLoading(false)
+          return
+        }
+
+        const res = await fetch(`/api/legacy-publication?id=${legacyPublicationId}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        })
+        
+        if (!res.ok) {
+          setIneligibleReason("Publication not found.")
+          setLoading(false)
+          return
+        }
+
+        const data = await res.json()
+        
+        if (data.emp_id !== faculty.emp_id) {
+          setIneligibleReason(`Publication belongs to another faculty member. Expected ${faculty.emp_id} but got ${data.emp_id}`)
+          setLoading(false)
+          return
+        }
+        paperData = data
+        
+        const { data: fac } = await supabase.from('master_faculty').select('name, dept').eq('user_id', session.user.id).single()
+        if (fac) setFacultyDetails(fac)
+
+        // Find existing application by DOI or Title since legacy_publication_id column isn't migrated
+        let existingApp = null
+        if (data.doi) {
+          const { data: byDoi } = await supabase
+            .from('incentive_applications')
+            .select('*, submissions!inner(*)')
+            .eq('submissions.doi', data.doi)
+            .maybeSingle()
+          existingApp = byDoi
+        }
+        
+        if (!existingApp && data.title) {
+          const { data: byTitle } = await supabase
+            .from('incentive_applications')
+            .select('*, submissions!inner(*)')
+            .eq('submissions.title', data.title)
+            .maybeSingle()
+          existingApp = byTitle
+        }
+
+        if (existingApp && existingApp.status !== 'rejected') {
+          setIneligibleReason("An application for this publication already exists.")
+          setLoading(false)
+          return
+        }
+const { data: settings } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'incentive_eligible_from_year')
+          .single()
+        
+        const cutoff = settings?.value ? Number(settings.value) : undefined;
+        const eligibility = checkIncentiveEligibility(data, cutoff, false)
+        if (!eligibility.eligible) {
+          setIneligibleReason(eligibility.reason)
+        }
+
+        if (existingApp && existingApp.status === 'rejected') {
+          setCategory(existingApp.category)
+        } else {
+          const docType = data.document_type_report || '';
+          if (docType === 'SCI') setCategory('sci_journal');
+          else if (docType === 'Scopus/WoS Journals') setCategory('esci_scopus_journal');
+          else if (docType === 'Scopus/WoS Conference/Book Chapter/Others') setCategory('conference');
+          else if (docType === 'Book') setCategory('book');
+        }
+
+        if (existingApp) {
+          if (existingApp.author_count) setAuthorCount(existingApp.author_count.toString())
+          if (existingApp.author_position) setAuthorPosition(existingApp.author_position.toString())
+          if (existingApp.impact_factor) setImpactFactor(existingApp.impact_factor.toString())
+          if (existingApp.journal_quartile) setJournalQuartile(existingApp.journal_quartile)
+          setSelfCitationCount(existingApp.self_citation_count.toString())
+          if (existingApp.h_index) setHIndex(existingApp.h_index.toString())
+          if (existingApp.publisher_tier) setPublisherTier(existingApp.publisher_tier)
+          if (existingApp.book_type) setBookType(existingApp.book_type)
+          if (existingApp.patent_type) setPatentType(existingApp.patent_type)
+          setPatentFormsConfirmed(existingApp.patent_forms_confirmed)
+          if (existingApp.citation_count) setCitationCount(existingApp.citation_count.toString())
+        }
+      } else {
         router.replace('/profile')
         return
       }
 
-      const { data: existingApp } = await supabase
-        .from('incentive_applications')
-        .select('*')
-        .eq('submission_id', submissionId)
-        .single()
-
-      if (existingApp && existingApp.status !== 'rejected') {
-        router.replace('/profile')
-        return
-      }
-
-      if (existingApp && existingApp.status === 'rejected') {
-        setCategory(existingApp.category)
-        if (existingApp.author_count) setAuthorCount(existingApp.author_count.toString())
-        if (existingApp.author_position) setAuthorPosition(existingApp.author_position.toString())
-        if (existingApp.impact_factor) setImpactFactor(existingApp.impact_factor.toString())
-        if (existingApp.journal_quartile) setJournalQuartile(existingApp.journal_quartile)
-        setSelfCitationCount(existingApp.self_citation_count.toString())
-        if (existingApp.h_index) setHIndex(existingApp.h_index.toString())
-        if (existingApp.publisher_tier) setPublisherTier(existingApp.publisher_tier)
-        if (existingApp.book_type) setBookType(existingApp.book_type)
-        if (existingApp.patent_type) setPatentType(existingApp.patent_type)
-        setPatentFormsConfirmed(existingApp.patent_forms_confirmed)
-        if (existingApp.citation_count) setCitationCount(existingApp.citation_count.toString())
-      }
-
-      setSubmissionData(data)
+      setSubmissionData(paperData)
       setLoading(false)
     }
     loadData()
@@ -115,10 +237,18 @@ function IncentiveApplyContent() {
     selfCitationCount: Number(selfCitationCount) || 0
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitting(true)
     setErrorMsg('')
+
+    const hasError = Object.values(fileStates).some(f => f.error)
+    if (hasError) {
+      setErrorMsg('Please resolve all file upload errors before submitting.')
+      setSubmitting(false)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
 
     // Validate author position cannot exceed total author count
     const numCount = Number(authorCount)
@@ -136,11 +266,41 @@ function IncentiveApplyContent() {
       }
     }
     try {
+      const fd = new FormData(e.currentTarget)
+      let fullPaperUrl, scopusUrl, publishedUrl;
+      if (legacyPublicationId) {
+        try {
+          [fullPaperUrl, scopusUrl, publishedUrl] = await Promise.all([
+            uploadFile(fd.get('proof_full_paper') as File, 'new', 'full_paper'),
+            uploadFile(fd.get('proof_scopus') as File, 'new', 'scopus'),
+            uploadFile(fd.get('proof_published') as File, 'new', 'published'),
+          ])
+        } catch (err: any) {
+          setErrorMsg(err.message)
+          setSubmitting(false)
+          return
+        }
+      }
+
       const { data: { session } } = await supabase.auth.getSession()
       const payload: any = {
-        submission_id: submissionId,
         category,
         self_citation_count: selfCitationCount
+      }
+      
+      if (submissionId) {
+        payload.submission_id = submissionId
+      } else if (legacyPublicationId) {
+        payload.legacy_publication_id = legacyPublicationId
+        if (fullPaperUrl) payload.proof_full_paper_url = fullPaperUrl
+        if (scopusUrl) payload.proof_scopus_url = scopusUrl
+        if (publishedUrl) payload.proof_published_url = publishedUrl
+
+        payload.isbn_no = fd.get('isbn_no') || null
+        payload.issn_no = fd.get('issn_no') || null
+        payload.publication_date = fd.get('publication_date') || null
+        payload.volume = fd.get('volume') || null
+        payload.issue = fd.get('issue') || null
       }
       
       if (category === 'sci_journal') {
@@ -189,6 +349,23 @@ function IncentiveApplyContent() {
 
   if (loading) {
     return <div className="min-h-screen bg-blue-50 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
+  }
+
+  if (ineligibleReason) {
+    return (
+      <div className="min-h-screen bg-blue-50 flex flex-col items-center justify-center p-6 text-center">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-red-100">
+          <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-800 mb-2">Not Eligible</h2>
+          <p className="text-slate-600 font-medium mb-8">{ineligibleReason}</p>
+          <button onClick={() => router.push('/profile')} className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-blue-700 transition-colors">
+            Return to Profile
+          </button>
+        </div>
+      </div>
+    )
   }
 
   const renderRulesTable = () => {
@@ -292,6 +469,39 @@ function IncentiveApplyContent() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          
+          <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-6 sm:p-8 space-y-6 border border-slate-100">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                <span className="font-bold">1</span>
+              </div>
+              <h2 className="text-xl font-bold text-slate-800">Your Details</h2>
+              <span className="ml-auto text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                Auto-filled from your account
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <FormField label="Faculty Name">
+                <div className="relative group">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input type="text" readOnly value={facultyDetails?.name || ''} className="w-full rounded-xl border-slate-200 bg-slate-100/50 pl-11 pr-4 py-3.5 text-slate-700 text-sm shadow-inner font-bold border cursor-default select-none" />
+                </div>
+              </FormField>
+              
+              <FormField label="Department">
+                <div className="relative group">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input type="text" readOnly value={facultyDetails?.dept || ''} className="w-full rounded-xl border-slate-200 bg-slate-100/50 pl-11 pr-4 py-3.5 text-slate-700 text-sm shadow-inner font-bold border cursor-default select-none" />
+                </div>
+              </FormField>
+            </div>
+          </div>
+
+          {submissionData && (
+            <PublicationDetailsForm mode="prefilled" defaultValues={submissionData} />
+          )}
+
           <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-6 sm:p-8 space-y-6 border border-slate-100">
             
             <FormField label="Incentive Category" required>
@@ -487,7 +697,76 @@ function IncentiveApplyContent() {
             </div>
           </div>
 
-          <button type="submit" disabled={submitting} className="w-full relative group overflow-hidden rounded-2xl">
+
+          <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-6 sm:p-8 border border-slate-100">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                <span className="font-bold">3</span>
+              </div>
+              <h2 className="text-xl font-bold text-slate-800">Upload Proofs</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {[
+                { name: 'proof_full_paper', label: 'Full Paper', accept: '.pdf,.doc,.docx', hint: 'PDF / Word format' },
+                { name: 'proof_scopus', label: 'Scopus Record', accept: '.pdf,.jpg,.jpeg,.png', hint: 'PDF or Screenshot' },
+                { name: 'proof_published', label: 'Published Proof', accept: '.pdf,.jpg,.jpeg,.png', hint: 'First page / Acceptance' },
+              ].map(({ name, label, accept, hint }) => (
+                <div key={name} className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-blue-400 rounded-xl blur opacity-0 group-hover:opacity-20 transition duration-300" />
+                  <div className="relative p-5 rounded-xl border border-slate-200 bg-blue-50 group-hover:bg-white transition-colors h-full flex flex-col justify-between">
+                    <div>
+                      <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mb-3">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <h3 className="font-bold text-slate-800 mb-1">{label}</h3>
+                      <p className="text-xs text-slate-500 font-medium mb-4">{hint}</p>
+                    </div>
+                    <div className="relative">
+                      <input type="file" name={name} accept={accept} required
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            const sizeMB = file.size / (1024 * 1024)
+                            const sizeStr = `${sizeMB.toFixed(2)} MB`
+                            if (file.size > 1 * 1024 * 1024) {
+                              setFileStates(prev => ({
+                                ...prev,
+                                [name]: { name: file.name, size: sizeStr, error: `File is ${sizeStr} — must be under 1MB` }
+                              }))
+                              e.target.value = '' // Clear input
+                            } else {
+                              setFileStates(prev => ({
+                                ...prev,
+                                [name]: { name: file.name, size: sizeStr }
+                              }))
+                            }
+                          } else {
+                            setFileStates(prev => {
+                              const copy = { ...prev }
+                              delete copy[name]
+                              return copy
+                            })
+                          }
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 text-blue-700 font-semibold text-sm group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-colors">
+                          <Upload className="w-4 h-4" /> {fileStates[name] ? 'Replace File' : 'Choose File'}
+                        </div>
+                        {fileStates[name] && (
+                          <div className={`text-xs px-2 py-1 rounded font-medium truncate ${fileStates[name].error ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'}`}>
+                            {fileStates[name].error || fileStates[name].name}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button type="submit" disabled={submitting || hasFileError} className="w-full relative group overflow-hidden rounded-2xl">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 bg-[length:200%_auto] group-hover:animate-gradient" />
             <div className="relative flex items-center justify-center gap-2 py-4 px-6 text-white font-black text-lg shadow-xl transition-transform active:scale-[0.98]">
               {submitting ? (

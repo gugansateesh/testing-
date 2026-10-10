@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   // Fetch Publications (from legacy_publications by emp_id)
   const { data: publications } = await admin
     .from('legacy_publications')
-    .select('id, title, source_title, year, document_type_report, doi, department')
+    .select('id, title, source_title, year, document_type_report, doi, department, authors, link, is_duplicate')
     .eq('emp_id', empId)
     .order('year', { ascending: false })
     .limit(100)
@@ -44,10 +44,14 @@ export async function GET(request: Request) {
   // Fetch Incentive Applications (by user id)
   const { data: incentives } = await admin
     .from('incentive_applications')
-    .select('id, category, status, calculated_amount, created_at')
+    .select('id, category, status, calculated_amount, created_at, submissions(id, title, doi)')
     .eq('applicant_id', auth.id)
     .order('created_at', { ascending: false })
-    .limit(50)
+    .limit(500)
+
+  // Also fetch the cutoff year setting
+  const { data: cutoffSetting } = await admin.from('app_settings').select('value').eq('key', 'incentive_eligible_from_year').single()
+  const cutoff = cutoffSetting?.value ? Number(cutoffSetting.value) : undefined
 
   // Fetch Seed Fund Applications (by user id)
   const { data: seedFunds } = await admin
@@ -73,14 +77,23 @@ export async function GET(request: Request) {
     .order('created_at', { ascending: false })
     .limit(50)
 
-  const allPublications = [
-    ...(publications || []).map(p => ({ ...p, _source: 'legacy' })),
-    ...(livePublications || []).map(p => ({
+  const legacyMapped = (publications || []).map(p => ({ ...p, _source: 'legacy' }))
+  
+  const liveMapped = (livePublications || [])
+    .filter(livePub => {
+      // Don't show live publication if it's already in legacy publications (prevents duplication)
+      return !legacyMapped.some(legPub => 
+        (livePub.doi && legPub.doi === livePub.doi) || 
+        (livePub.title && legPub.title === livePub.title)
+      )
+    })
+    .map(p => ({
       ...p,
       document_type_report: p.doc_type_report,
       _source: 'live'
     }))
-  ].sort((a, b) => (b.year || 0) - (a.year || 0))
+
+  const allPublications = [...legacyMapped, ...liveMapped].sort((a, b) => (b.year || 0) - (a.year || 0))
 
   return NextResponse.json({
     publications: allPublications,
@@ -89,5 +102,6 @@ export async function GET(request: Request) {
     seed_funds: seedFunds || [],
     consultancy: consultancy || [],
     project_grants: projectGrants || [],
+    cutoff_year: cutoff,
   })
 }
