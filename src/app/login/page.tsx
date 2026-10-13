@@ -126,6 +126,11 @@ export default function StaffLoginPage() {
                       {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
+                  <div className="flex justify-end">
+                    <Link href="/reset-password" className="text-xs text-slate-400 dark:text-slate-500 hover:text-[#0A3D8F] dark:hover:text-blue-400 font-medium transition-colors">
+                      Forgot password?
+                    </Link>
+                  </div>
                 </div>
 
                 <button id="login-submit" type="submit" disabled={loading}
