@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   try {
     let query = admin.from('legacy_patents').select('*')
     if (year && year !== 'all') query = query.eq('academic_year', year)
-    if (dept && dept !== 'all') query = query.eq('department', dept)
+    if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
     if (status && status !== 'all') query = query.ilike('status', `%${status}%`)
     if (startDate) query = query.gte('filed_date', startDate)
     if (endDate) query = query.lte('filed_date', endDate)
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
     while (true) {
       let queryPage = admin.from('legacy_patents').select('*').range(from, from + step - 1)
       if (year && year !== 'all') queryPage = queryPage.eq('academic_year', year)
-      if (dept && dept !== 'all') queryPage = queryPage.eq('department', dept)
+      if (dept && dept !== 'all') queryPage = queryPage.ilike('department', dept.trim())
       if (status && status !== 'all') queryPage = queryPage.ilike('status', `%${status}%`)
       if (startDate) queryPage = queryPage.gte('filed_date', startDate)
       if (endDate) queryPage = queryPage.lte('filed_date', endDate)

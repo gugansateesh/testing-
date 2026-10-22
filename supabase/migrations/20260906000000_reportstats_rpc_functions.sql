@@ -10,6 +10,7 @@ BEGIN
         'submissions',
         'legacy_publications',
         'incentive_applications',
+        'legacy_incentives',
         'legacy_patents',
         'seed_fund_applications',
         'legacy_seed_fund_grants',
@@ -25,7 +26,10 @@ BEGIN
     -- 2. STRICT ALLOWLIST: Reject any unauthorized columns
     IF p_column_name NOT IN (
         'department',
+        'dept',
+        'research_centre',
         'academic_year',
+        'incentive_year',
         'year',
         'publication_month',
         'patent_status',

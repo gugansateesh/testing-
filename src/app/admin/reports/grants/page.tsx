@@ -61,9 +61,11 @@ export default function GrantsReportPage() {
         const list = data || []
         setGrants(list)
         setTotalAmount(apiTotal || 0)
-        if (year === 'all' && dept === 'all') {
-          setGrantYears(yearList || [])
-          setDepartments(deptList || [])
+        if (yearList && yearList.length > 0) {
+          setGrantYears(prev => prev.length > 0 ? prev : yearList)
+        }
+        if (deptList && deptList.length > 0) {
+          setDepartments(prev => prev.length > 0 ? prev : deptList)
         }
       }
     } catch (err) { console.error(err) }
@@ -254,7 +256,7 @@ export default function GrantsReportPage() {
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-[#0A3D8F] text-white">
                 <tr>
-                  <th className="px-4 py-3 font-semibold border-r border-blue-800">#</th>
+                  <th className="px-4 py-3 font-semibold border-r border-blue-800 text-center">S.No</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Academic Year</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Dept</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800 min-w-[280px]">PI / Co-Investigator</th>

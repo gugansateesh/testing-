@@ -31,7 +31,7 @@ export async function GET(request: Request) {
         .range(page * pageSize, (page + 1) * pageSize - 1)
 
       if (year && year !== 'all') query = query.eq('academic_year', year)
-      if (dept && dept !== 'all') query = query.eq('department', dept)
+      if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
 
       const { data: pageData, error } = await query
       if (error) throw error
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
       filteredLive = filteredLive.filter(r => r.academic_year === year)
     }
     if (dept && dept !== 'all') {
-      filteredLive = filteredLive.filter(r => r.department === dept)
+      filteredLive = filteredLive.filter(r => (r.department || '').trim().toLowerCase() === dept.trim().toLowerCase())
     }
 
     const combined = [...allData, ...filteredLive]
@@ -116,7 +116,7 @@ export async function GET(request: Request) {
     const ws = workbook.addWorksheet('Research Grants')
 
     const headers = [
-      'Academic Year', 'Department', 'PI / Co-Investigator', 'Title of the Project',
+      'S.No', 'Academic Year', 'Department', 'PI / Co-Investigator', 'Title of the Project',
       'Type of Project', 'Funding Agency', 'Period', 'Total Grant Sanctioned (₹)'
     ]
 
@@ -132,11 +132,12 @@ export async function GET(request: Request) {
     })
     headerRow.height = 30
 
-    const colWidths = [15, 20, 40, 45, 20, 30, 20, 20]
+    const colWidths = [10, 15, 20, 40, 45, 20, 30, 20, 20]
     colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w })
 
-    ;(combined || []).forEach(row => {
+    ;(combined || []).forEach((row, idx) => {
       ws.addRow([
+        idx + 1,
         row.academic_year || '',
         row.department || '',
         row.pi_co_investigator || '',

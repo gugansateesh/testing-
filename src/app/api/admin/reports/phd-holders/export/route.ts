@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { verifyToken, extractToken } from '@/lib/verifyAuth'
 import ExcelJS from 'exceljs'
+import staffDirectoryRaw from '@/data/staff_directory.json'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+interface StaffContact {
+  email: string | null
+  phone: string | null
+}
 
 export async function GET(request: Request) {
   const admin = createAdminClient()
@@ -31,7 +37,7 @@ export async function GET(request: Request) {
         .range(page * pageSize, (page + 1) * pageSize - 1)
       
       if (dept && dept !== 'all') {
-        query = query.ilike('dept', dept)
+        query = query.ilike('dept', dept.trim())
       }
 
       if (phdOnly) {
@@ -55,14 +61,69 @@ export async function GET(request: Request) {
 
     const rawData = allRawData
 
+    // Fetch master_faculty to get email and phone
+    const { data: facultyData } = await admin
+      .from('master_faculty')
+      .select('emp_id, name, email, phone')
+
+    const contactByEmpId = new Map<string, StaffContact>()
+    const contactByName = new Map<string, StaffContact>()
+
+    if (Array.isArray(staffDirectoryRaw)) {
+      for (const s of staffDirectoryRaw as any[]) {
+        if (s.emp_id) {
+          contactByEmpId.set(s.emp_id.trim().toUpperCase(), {
+            email: s.email || null,
+            phone: s.phone || null,
+          })
+        }
+        if (s.name) {
+          contactByName.set(s.name.trim().toLowerCase(), {
+            email: s.email || null,
+            phone: s.phone || null,
+          })
+        }
+      }
+    }
+
+    if (facultyData) {
+      for (const f of facultyData) {
+        if (f.emp_id) {
+          const cleanId = f.emp_id.trim().toUpperCase()
+          const existing = contactByEmpId.get(cleanId)
+          contactByEmpId.set(cleanId, {
+            email: f.email || existing?.email || null,
+            phone: f.phone || existing?.phone || null,
+          })
+        }
+        if (f.name) {
+          const cleanName = f.name.trim().toLowerCase()
+          const existing = contactByName.get(cleanName)
+          contactByName.set(cleanName, {
+            email: f.email || existing?.email || null,
+            phone: f.phone || existing?.phone || null,
+          })
+        }
+      }
+    }
+
     let data = [...(rawData || [])].sort((a, b) => {
       return (a.s_no || 0) - (b.s_no || 0)
+    }).map(row => {
+      const empIdClean = (row.emp_id || '').trim().toUpperCase()
+      const nameClean = (row.name || '').trim().toLowerCase()
+      const contact = contactByEmpId.get(empIdClean) || contactByName.get(nameClean)
+      return {
+        ...row,
+        email: contact?.email || '',
+        phone: contact?.phone || '',
+      }
     })
 
     const workbook = new ExcelJS.Workbook()
     const ws = workbook.addWorksheet('PhD Holders')
 
-    const headers = ['S.No', 'Dept', 'Name of the Faculty']
+    const headers = ['S.No', 'Dept', 'Emp ID', 'Name of the Faculty', 'Email', 'Phone Number']
     
     const headerRow = ws.addRow(headers)
     headerRow.eachCell((cell) => {
@@ -77,12 +138,12 @@ export async function GET(request: Request) {
     })
     headerRow.height = 30
 
-    const colWidths = [10, 20, 40]
+    const colWidths = [10, 18, 16, 36, 34, 20]
     colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w })
 
-    ;(data || []).forEach(row => {
+    ;(data || []).forEach((row, idx) => {
       ws.addRow([
-        row.s_no || '', row.dept || '', row.name || ''
+        idx + 1, row.dept || '', row.emp_id || '', row.name || '', row.email || '', row.phone || ''
       ])
     })
 

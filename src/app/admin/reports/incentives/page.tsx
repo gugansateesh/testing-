@@ -66,9 +66,11 @@ export default function IncentivesReportPage() {
         setIncentives(data || [])
         setTotalAmount(apiTotal || 0)
         
-        if (year === 'all' && dept === 'all') {
-          setIncYears(yearList || [])
-          setDepartments(deptList || [])
+        if (yearList && yearList.length > 0) {
+          setIncYears(prev => prev.length > 0 ? prev : yearList)
+        }
+        if (deptList && deptList.length > 0) {
+          setDepartments(prev => prev.length > 0 ? prev : deptList)
         }
       } else {
         console.error('Incentives fetch failed', res.status)
@@ -354,7 +356,7 @@ export default function IncentivesReportPage() {
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-[#0A3D8F] text-white">
                 <tr>
-                  <th className="px-4 py-3 font-semibold border-r border-blue-800 text-center">#</th>
+                  <th className="px-4 py-3 font-semibold border-r border-blue-800 text-center">S.No</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Year</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Dept</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800 min-w-[200px]">Faculty Name</th>

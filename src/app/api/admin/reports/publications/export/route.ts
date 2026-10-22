@@ -61,7 +61,7 @@ export async function GET(request: Request) {
     while (hasMore) {
       let query = admin.from('legacy_publications').select('*').range(page * pageSize, (page + 1) * pageSize - 1)
       if (year && year !== 'all') query = query.eq('year', parseInt(year))
-      if (dept && dept !== 'all') query = query.eq('department', dept)
+      if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
       if (month && month !== 'all') query = query.eq('publication_month', month)
       if (startDate) query = query.gte('publication_date', startDate)
       if (endDate) query = query.lte('publication_date', endDate)
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
     // ── 2. Approved submissions ───────────────────────────────────────────────
     let subsQuery = admin.from('submissions').select('*').eq('status', 'approved')
     if (year && year !== 'all') subsQuery = subsQuery.eq('year', parseInt(year))
-    if (dept && dept !== 'all') subsQuery = subsQuery.ilike('department', dept)
+    if (dept && dept !== 'all') subsQuery = subsQuery.ilike('department', dept.trim())
 
     const { data: subsData } = await subsQuery
     const mappedSubs = (subsData || []).map(submissionToPubShape)
@@ -117,10 +117,13 @@ export async function GET(request: Request) {
 
     const combined = [...legacyNormalized, ...deduplicatedSubs].sort((a, b) => {
       if ((b.year || 0) !== (a.year || 0)) return (b.year || 0) - (a.year || 0)
+      if (a.publication_date && b.publication_date) {
+        return new Date(b.publication_date).getTime() - new Date(a.publication_date).getTime()
+      }
+      if (a.publication_date) return -1
+      if (b.publication_date) return 1
       if (a.s_no !== null && b.s_no !== null) return (a.s_no || 0) - (b.s_no || 0)
-      if (a.s_no === null) return 1
-      if (b.s_no === null) return -1
-      return 0
+      return (a.faculty_name || '').localeCompare(b.faculty_name || '')
     })
 
     // ── 5. Build Excel workbook ───────────────────────────────────────────────
@@ -146,9 +149,9 @@ export async function GET(request: Request) {
     const colWidths = [10, 30, 40, 30, 15, 15, 15, 15, 15, 30, 15, 40, 40, 40, 40, 25, 25, 20, 20, 20]
     colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w })
 
-    combined.forEach(row => {
+    combined.forEach((row, idx) => {
       const dataRow = ws.addRow([
-        row.s_no || '',
+        idx + 1,
         row.authors || '',
         row.title || '',
         row.source_title || '',

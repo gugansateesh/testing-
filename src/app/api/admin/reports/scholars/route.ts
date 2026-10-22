@@ -19,29 +19,72 @@ export async function GET(request: Request) {
   const endDate = searchParams.get('endDate')
 
   try {
-    let query = admin.from('legacy_research_scholars').select('*')
-    if (year && year !== 'all') query = query.eq('academic_year', year)
-    if (dept && dept !== 'all') query = query.eq('research_centre', dept)
-    if (startDate) query = query.gte('year_of_registration', startDate)
-    if (endDate) query = query.lte('year_of_registration', endDate)
-    
-    // get unique research centres for the dropdown via RPC
-    const { data: allDeptsData } = await admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_research_scholars', p_column_name: 'research_centre' })
-    const { data: allYearsData } = await admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_research_scholars', p_column_name: 'academic_year' })
+    const applyFilters = (baseQuery: any) => {
+      let q = baseQuery
+      if (year && year !== 'all') {
+        const yTrim = year.trim()
+        if (/^\d{4}$/.test(yTrim)) {
+          // Calendar year matches registration year
+          q = q.gte('year_of_registration', `${yTrim}-01-01`).lte('year_of_registration', `${yTrim}-12-31`)
+        } else {
+          // Academic year format (e.g. 2025-2026)
+          q = q.eq('academic_year', yTrim)
+        }
+      }
+      if (dept && dept !== 'all') {
+        const dTrim = dept.trim()
+        if (dTrim.toUpperCase() === 'MECH' || dTrim.toUpperCase() === 'MECHANICAL') {
+          q = q.or('research_centre.ilike.MECH,research_centre.ilike.MECHANICAL')
+        } else {
+          q = q.ilike('research_centre', dTrim)
+        }
+      }
+      if (startDate) q = q.gte('year_of_registration', startDate)
+      if (endDate) q = q.lte('year_of_registration', endDate)
+      return q
+    }
 
-    const departments = allDeptsData ? allDeptsData.map((d: any) => d.val).filter(Boolean).sort() : []
-    const years = allYearsData ? allYearsData.map((y: any) => y.val).filter(Boolean).sort().reverse() : []
+    // Get unique research centres, academic years, and registration years for dropdowns
+    const { data: allScholarsMeta } = await admin
+      .from('legacy_research_scholars')
+      .select('research_centre, academic_year, year_of_registration')
+      .limit(5000)
+
+    const deptSet = new Set<string>()
+    const yearSet = new Set<string>()
+
+    ;(allScholarsMeta || []).forEach((r: any) => {
+      if (r.research_centre) {
+        const d = String(r.research_centre).trim()
+        if (d && d !== 'null' && d !== '\\N' && d !== 'undefined') deptSet.add(d)
+      }
+      if (r.academic_year) {
+        const y = String(r.academic_year).trim()
+        if (y && y !== 'null' && y !== '\\N' && y !== 'undefined') yearSet.add(y)
+      }
+      if (r.year_of_registration) {
+        const m = String(r.year_of_registration).match(/^(\d{4})/)
+        if (m) yearSet.add(m[1])
+      }
+    })
+
+    const departments = Array.from(deptSet).sort((a, b) => a.localeCompare(b))
+    // Sort years descending by year number
+    const years = Array.from(yearSet).sort((a, b) => {
+      const numA = parseInt(a.slice(0, 4), 10) || 0
+      const numB = parseInt(b.slice(0, 4), 10) || 0
+      if (numB !== numA) return numB - numA
+      return b.localeCompare(a)
+    })
 
     // Pagination for legacy_research_scholars
     let allData: any[] = []
     let from = 0
     const step = 1000
     while (true) {
-      let queryPage = admin.from('legacy_research_scholars').select('*').range(from, from + step - 1)
-      if (year && year !== 'all') queryPage = queryPage.eq('academic_year', year)
-      if (dept && dept !== 'all') queryPage = queryPage.eq('research_centre', dept)
-      if (startDate) queryPage = queryPage.gte('year_of_registration', startDate)
-      if (endDate) queryPage = queryPage.lte('year_of_registration', endDate)
+      let queryPage = applyFilters(
+        admin.from('legacy_research_scholars').select('*').range(from, from + step - 1)
+      )
       
       const { data, error } = await queryPage
       if (error) throw error

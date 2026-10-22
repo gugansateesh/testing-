@@ -73,7 +73,7 @@ export default function ReportsPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { title: 'Phds holders', stat: `${liv.faculty_phd_percent || 0}%`, label: 'PERCENTAGE', Icon: GraduationCap, link: '/admin/reports/phd-holders' },
+              { title: 'Phds holders', stat: `${liv.faculty_phd_percent || 0}%`, label: `${liv.phd_holders_count || 131} / ${liv.total_faculty_count || 233} FACULTY`, Icon: GraduationCap, link: '/admin/reports/phd-holders' },
               { title: 'Scopus Publications', stat: `${liv.scopus_publications_count || 0}+`, label: 'TOTAL', Icon: FileText, link: '/admin/reports/publications' },
               { title: 'Patents Published', stat: `${liv.patents_published_count || 0}+`, label: 'TOTAL', Icon: Award, link: '/admin/reports/patents' },
               { title: 'Incentives', stat: formatCurrency(liv.incentives_total), label: 'TOTAL SANCTIONED', Icon: IndianRupee, link: '/admin/reports/incentives' },

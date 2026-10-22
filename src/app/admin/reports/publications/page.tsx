@@ -43,10 +43,14 @@ export default function PublicationsReportPage() {
         const { data, departments: deptList, years: yearList, months: monthList } = await res.json()
         setPublications(data || [])
         
-        if (year === 'all' && dept === 'all') {
-          setPubYears(yearList || [])
-          setDepartments(deptList || [])
-          setMonths(monthList || [])
+        if (yearList && yearList.length > 0) {
+          setPubYears(prev => prev.length > 0 ? prev : yearList)
+        }
+        if (deptList && deptList.length > 0) {
+          setDepartments(prev => prev.length > 0 ? prev : deptList)
+        }
+        if (monthList && monthList.length > 0) {
+          setMonths(prev => prev.length > 0 ? prev : monthList)
         }
       } else {
         console.error('Publications fetch failed', res.status)
@@ -249,7 +253,10 @@ export default function PublicationsReportPage() {
       const search = textSearch.toLowerCase()
       if (!p.title?.toLowerCase().includes(search) &&
           !p.authors?.toLowerCase().includes(search) &&
-          !p.doi?.toLowerCase().includes(search)) {
+          !p.doi?.toLowerCase().includes(search) &&
+          !p.faculty_name?.toLowerCase().includes(search) &&
+          !p.emp_id?.toLowerCase().includes(search) &&
+          !p.department?.toLowerCase().includes(search)) {
         return false
       }
     }
@@ -352,10 +359,10 @@ export default function PublicationsReportPage() {
               <div className="flex items-center gap-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-500 rounded-lg px-3 py-1">
                 <input 
                   type="text" 
-                  placeholder="Title, Author, DOI..."
+                  placeholder="Search title, author, faculty, emp id..."
                   value={textSearch} 
                   onChange={e => setTextSearch(e.target.value)} 
-                  className="bg-transparent text-slate-700 dark:text-slate-100 text-sm font-semibold focus:outline-none w-36" 
+                  className="bg-transparent text-slate-700 dark:text-slate-100 text-sm font-semibold focus:outline-none w-52" 
                 />
                 {textSearch && (
                   <button onClick={() => setTextSearch('')} className="ml-1 text-slate-400 hover:text-red-500">
@@ -393,10 +400,10 @@ export default function PublicationsReportPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredPublications.length === 0 ? (
-                  <tr><td colSpan={16} className="px-4 py-8 text-center text-slate-500 font-medium">No publications found.</td></tr>
+                  <tr><td colSpan={18} className="px-4 py-8 text-center text-slate-500 font-medium">No publications found.</td></tr>
                 ) : filteredPublications.slice(0, visiblePubCount).map((p, idx) => (
                     <tr key={p.id} className="hover:bg-blue-50 transition-colors">
-                      <td className="px-4 py-3 border-r border-slate-100 font-medium text-slate-500 text-center">{p.s_no || idx + 1}</td>
+                      <td className="px-4 py-3 border-r border-slate-100 font-medium text-slate-500 text-center">{idx + 1}</td>
                       <td className="px-4 py-3 border-r border-slate-100 text-slate-700 font-bold text-center">{p.year || '—'}</td>
                       <td className="px-4 py-3 border-r border-slate-100 text-slate-600 text-center">{p.publication_month || '—'}</td>
                       <td className="px-4 py-3 border-r border-slate-100 text-slate-600 text-center">{p.publication_date || '—'}</td>

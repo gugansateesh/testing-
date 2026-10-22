@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   try {
     let query = admin.from('legacy_research_supervisors').select('*')
     if (year && year !== 'all') query = query.eq('academic_year', year)
-    if (dept && dept !== 'all') query = query.eq('department', dept)
+    if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
 
     const { data, error } = await query
     if (error) throw error
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     const ws = workbook.addWorksheet('Supervisors')
 
     const headers = [
-      'Academic Year', 'Department', 'Ref. No', 'Supervisor Name', 'Research Area', 'Current Scholars', 'Slots Available'
+      'S.No', 'Academic Year', 'Department', 'Ref. No', 'Supervisor Name', 'Research Area', 'Current Scholars', 'Slots Available'
     ]
     
     const headerRow = ws.addRow(headers)
@@ -50,12 +50,12 @@ export async function GET(request: Request) {
     })
     headerRow.height = 30
 
-    const colWidths = [15, 20, 15, 30, 40, 15, 15]
+    const colWidths = [10, 15, 20, 15, 30, 40, 15, 15]
     colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w })
 
-    ;(result || []).forEach(row => {
+    ;(result || []).forEach((row, idx) => {
       ws.addRow([
-        row.academic_year || '', row.department || '', row.ref_no || '', row.supervisor_name || '', row.research_area || '', row.current_scholars_count, row.slots_available
+        idx + 1, row.academic_year || '', row.department || '', row.ref_no || '', row.supervisor_name || '', row.research_area || '', row.current_scholars_count, row.slots_available
       ])
     })
 

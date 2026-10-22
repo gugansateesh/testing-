@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   try {
     let query = admin.from('legacy_consultancy').select('*')
     if (year && year !== 'all') query = query.eq('academic_year', year)
-    if (dept && dept !== 'all') query = query.eq('department', dept)
+    if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
     if (startDate) query = query.gte('project_date', startDate)
     if (endDate) query = query.lte('project_date', endDate)
 
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     const ws = workbook.addWorksheet('Consultancy Projects')
 
     const headers = [
-      'Academic Year', 'Department', 'Project Date', 'Faculty Name',
+      'S.No', 'Academic Year', 'Department', 'Project Date', 'Faculty Name',
       'Name of the consultancy project / corporate training', 'Funding Agency', 'Amount (₹)'
     ]
 
@@ -53,13 +53,14 @@ export async function GET(request: Request) {
     })
     headerRow.height = 30
 
-    const colWidths = [18, 20, 15, 30, 50, 35, 18]
+    const colWidths = [10, 18, 20, 15, 30, 50, 35, 18]
     colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w })
 
     const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('en-IN') : ''
 
-    result.forEach(row => {
+    result.forEach((row, idx) => {
       ws.addRow([
+        idx + 1,
         row.academic_year || '',
         row.department || '',
         fmtDate(row.project_date),

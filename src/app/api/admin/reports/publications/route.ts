@@ -70,7 +70,7 @@ export async function GET(request: Request) {
       let query = admin.from('legacy_publications').select('*').range(page * pageSize, (page + 1) * pageSize - 1)
 
       if (year && year !== 'all') query = query.eq('year', parseInt(year))
-      if (dept && dept !== 'all') query = query.ilike('department', dept)
+      if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
       if (month && month !== 'all') query = query.eq('publication_month', month)
       if (startDate) query = query.gte('publication_date', startDate)
       if (endDate) query = query.lte('publication_date', endDate)
@@ -94,7 +94,7 @@ export async function GET(request: Request) {
     let subsQuery = admin.from('submissions').select('*').eq('status', 'approved')
 
     if (year && year !== 'all') subsQuery = subsQuery.eq('year', parseInt(year))
-    if (dept && dept !== 'all') subsQuery = subsQuery.ilike('department', dept)
+    if (dept && dept !== 'all') subsQuery = subsQuery.ilike('department', dept.trim())
     // month/startDate/endDate are based on publication_date — handle gracefully if column missing
     // We select publication_date but don't filter on it server-side;
     // it's used only for display and client-side month derivation.
@@ -138,13 +138,16 @@ export async function GET(request: Request) {
     // ── 4. Merge and sort ─────────────────────────────────────────────────────
     const combined = [...legacyRaw, ...deduplicatedSubs]
 
-    // Sort: year desc, then s_no asc (nulls last for live submissions)
+    // Sort: year desc, then publication_date desc, then faculty_name asc
     combined.sort((a, b) => {
       if ((b.year || 0) !== (a.year || 0)) return (b.year || 0) - (a.year || 0)
+      if (a.publication_date && b.publication_date) {
+        return new Date(b.publication_date).getTime() - new Date(a.publication_date).getTime()
+      }
+      if (a.publication_date) return -1
+      if (b.publication_date) return 1
       if (a.s_no !== null && b.s_no !== null) return (a.s_no || 0) - (b.s_no || 0)
-      if (a.s_no === null) return 1
-      if (b.s_no === null) return -1
-      return 0
+      return (a.faculty_name || '').localeCompare(b.faculty_name || '')
     })
 
     // ── 5. Compute filter option lists from combined set ───────────────────────

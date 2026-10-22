@@ -19,14 +19,30 @@ export async function GET(request: Request) {
   try {
     let query = admin.from('legacy_research_supervisors').select('*')
     if (year && year !== 'all') query = query.eq('academic_year', year)
-    if (dept && dept !== 'all') query = query.eq('department', dept)
+    if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
     
-    // get unique departments and years for the dropdown via RPC
-    const { data: allDeptsData } = await admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_research_supervisors', p_column_name: 'department' })
-    const { data: allYearsData } = await admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_research_supervisors', p_column_name: 'academic_year' })
-    
-    const departments = allDeptsData ? allDeptsData.map((d: any) => d.val).filter(Boolean).sort() : []
-    const years = allYearsData ? allYearsData.map((y: any) => y.val).filter(Boolean).sort().reverse() : []
+    // Get unique departments and years for the dropdown
+    const { data: allSupervisorsMeta } = await admin
+      .from('legacy_research_supervisors')
+      .select('department, academic_year')
+      .limit(5000)
+
+    const deptSet = new Set<string>()
+    const yearSet = new Set<string>()
+
+    ;(allSupervisorsMeta || []).forEach((r: any) => {
+      if (r.department) {
+        const d = String(r.department).trim()
+        if (d && d !== 'null' && d !== '\\N') deptSet.add(d)
+      }
+      if (r.academic_year) {
+        const y = String(r.academic_year).trim()
+        if (y && y !== 'null' && y !== '\\N') yearSet.add(y)
+      }
+    })
+
+    const departments = Array.from(deptSet).sort((a, b) => a.localeCompare(b))
+    const years = Array.from(yearSet).sort((a, b) => b.localeCompare(a))
 
     // Pagination for legacy_research_supervisors
     let allData: any[] = []
@@ -35,7 +51,7 @@ export async function GET(request: Request) {
     while (true) {
       let queryPage = admin.from('legacy_research_supervisors').select('*').range(from, from + step - 1)
       if (year && year !== 'all') queryPage = queryPage.eq('academic_year', year)
-      if (dept && dept !== 'all') queryPage = queryPage.eq('department', dept)
+      if (dept && dept !== 'all') queryPage = queryPage.ilike('department', dept.trim())
       
       const { data, error } = await queryPage
       if (error) throw error

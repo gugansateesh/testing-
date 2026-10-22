@@ -175,7 +175,10 @@ export default function PatentsReportPage() {
       if (rowType !== activePatentType) return false
     }
     if (appNumberSearch) {
-      if (!p.application_number?.toLowerCase().includes(appNumberSearch.toLowerCase())) {
+      const q = appNumberSearch.toLowerCase()
+      if (!p.application_number?.toLowerCase().includes(q) &&
+          !p.title?.toLowerCase().includes(q) &&
+          !p.inventors?.toLowerCase().includes(q)) {
         return false
       }
     }
@@ -196,9 +199,11 @@ export default function PatentsReportPage() {
         const { data, departments: deptList, years: yearList } = await res.json()
         setPatents(data || [])
         
-        if (year === 'all' && dept === 'all') {
-          setPatYears(yearList || [])
-          setDepartments(deptList || [])
+        if (yearList && yearList.length > 0) {
+          setPatYears(prev => prev.length > 0 ? prev : yearList)
+        }
+        if (deptList && deptList.length > 0) {
+          setDepartments(prev => prev.length > 0 ? prev : deptList)
         }
       } else {
         console.error('Patents fetch failed', res.status)
@@ -450,10 +455,10 @@ export default function PatentsReportPage() {
               <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-1">
                 <input 
                   type="text" 
-                  placeholder="App Number..."
+                  placeholder="Search app no, title, inventor..."
                   value={appNumberSearch} 
                   onChange={e => setAppNumberSearch(e.target.value)} 
-                  className="bg-transparent text-slate-700 text-sm font-semibold focus:outline-none w-28" 
+                  className="bg-transparent text-slate-700 text-sm font-semibold focus:outline-none w-52" 
                 />
                 {appNumberSearch && (
                   <button onClick={() => setAppNumberSearch('')} className="ml-1 text-slate-400 hover:text-red-500">

@@ -1,0 +1,2711 @@
+[
+  {
+    "emp_id": "SECETCFRD01",
+    "name": "Hamsini Krishna S",
+    "email": "hamsinikrishna.s@sece.ac.in",
+    "dept": "CFRD",
+    "designation": "Research Coordinator",
+    "type": "Non-Doctorate",
+    "phone": "9999999999"
+  },
+  {
+    "emp_id": "SECETAD006",
+    "name": "Dr. Sathish Kumar G",
+    "phone": "9962225615",
+    "designation": "HOD",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "hodaids@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC063",
+    "name": "Dr. Raja L",
+    "phone": "7667241024",
+    "designation": "Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "raja.lece@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC094",
+    "name": "Dr. Mohaideen Abdul Kadhar K",
+    "phone": "9952310604",
+    "designation": "Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "mohaideenabdulkadhar.k@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAD016",
+    "name": "Dr. Mohammed Mustafa M",
+    "phone": "9994447069",
+    "designation": "Associate Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "mohammedmustafa.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAD026",
+    "name": "Dr. Shobana G",
+    "phone": "9962004041",
+    "designation": "Associate Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "shobana.g@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAM016",
+    "name": "Dr. Sivaramakrishnan A",
+    "phone": "9489669294",
+    "designation": "Associate Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "sivaramakrishnan.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAD008",
+    "name": "Dr. Geetha M P",
+    "phone": "9942786440",
+    "designation": "Associate Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "geetha.mp@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS137",
+    "name": "Dr. Thenmozhi M",
+    "phone": "9944320069",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "thenmozhi.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAD012",
+    "name": "Dr. Nivaashini M",
+    "phone": "9786030434",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "nivaashini.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAD014",
+    "name": "Dr. Dinesh Kumar P",
+    "phone": "9789367232",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "dineshkumar.p@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAD019",
+    "name": "Ms. Kanimozhi J",
+    "phone": "8838096389",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "kanimozhi.taids@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD020",
+    "name": "Dr. Sujithra L R",
+    "phone": "9487725057",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "sujithra.lr@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAD024",
+    "name": "Dr. Rajesh Kumar C",
+    "phone": "9677799988",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "rajeshkumar.c@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS124",
+    "name": "Dr. Sumathi S",
+    "phone": "7708055502",
+    "designation": "HOD",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "hodaiml@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETIT004",
+    "name": "Dr. John Augustine P",
+    "phone": "9566326350",
+    "designation": "Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "johnaugustine.p@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAM001",
+    "name": "Dr. Karunakaran V",
+    "phone": "9003986281",
+    "designation": "Associate Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "karunakaran.v@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCB015",
+    "name": "Dr. Mahendhiran P D",
+    "phone": "9786003535",
+    "designation": "Associate Professor",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "mahendhiran.pd@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAM002",
+    "name": "Dr. Kathiresan K",
+    "phone": "9965666125",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "kathiresan.k@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAM015",
+    "name": "Dr. Varatharajan N",
+    "phone": "9789496799",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "varatharajan.n@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC081",
+    "name": "Dr. Vivek C",
+    "phone": "9952310040",
+    "designation": "HOD",
+    "original_dept": "CCE",
+    "dept": "CCE",
+    "email": "hodcce@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCC007",
+    "name": "Dr. Deepa R",
+    "phone": "9489212233",
+    "designation": "Professor",
+    "original_dept": "CCE",
+    "dept": "CCE",
+    "email": "deepa.r@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC071",
+    "name": "Dr. Ganesh C",
+    "phone": "9442430446",
+    "designation": "Associate Professor",
+    "original_dept": "CCE",
+    "dept": "CCE",
+    "email": "ganesh.c@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC091",
+    "name": "Dr. Dhamodharan S",
+    "phone": "9629277095",
+    "designation": "Associate Professor",
+    "original_dept": "CCE",
+    "dept": "CCE",
+    "email": "dhamodharan.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC089",
+    "name": "Dr. Babitha Lincy R",
+    "phone": "9597900145",
+    "designation": "Assistant professor",
+    "original_dept": "CCE",
+    "dept": "CFRD",
+    "email": "babithalincy.r@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCC004",
+    "name": "Dr. Thirrunavukkarasu R R",
+    "phone": "8610345281",
+    "designation": "Assistant Professor",
+    "original_dept": "CCE",
+    "dept": "CCE",
+    "email": "thirrunavukkarasu.r.r@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCB003",
+    "name": "Dr. Rajarajeswari P L",
+    "phone": "9442606125",
+    "designation": "Professor & Head",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "hodcsbs@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCB014",
+    "name": "Dr. Arunkumar C",
+    "phone": "1234586579",
+    "designation": "Associate Professor",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "arunkumar.c@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCB012",
+    "name": "Dr. Sandana Karuppan A",
+    "phone": "9176678252",
+    "designation": "Associate Professor",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "sandanakaruppan.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS087",
+    "name": "Dr. Chola Raja K",
+    "phone": "7598290829",
+    "designation": "ASSISTANT PROFESSOR",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "cholaraja.k@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAD038",
+    "name": "Dr. Ponni P",
+    "phone": "9791601888",
+    "designation": "Assistant Professor",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "ponni.p@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS052",
+    "name": "Dr. Subha R",
+    "phone": "9843932465",
+    "designation": "HOD",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "hodcse@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS061",
+    "name": "Dr. Akshaya V S",
+    "phone": "9843972454",
+    "designation": "Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "akshaya.vs@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS063",
+    "name": "Dr. Anandakumar H",
+    "phone": "9486137912",
+    "designation": "CFRD-Head",
+    "original_dept": "CSE",
+    "dept": "CFRD",
+    "email": "anandakumar.h@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS144",
+    "name": "Dr. Harikarthik S K",
+    "phone": "9994054932",
+    "designation": "Associate Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "harikarthik.s.k@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS102",
+    "name": "Dr. Gowtham Chakravarthy D",
+    "phone": "9994222724",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "secetcs102@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS132",
+    "name": "Dr. Ananthi S",
+    "phone": "9842921804",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "ananthi.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS073",
+    "name": "Dr. Anandaraj A",
+    "phone": "9952667716",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "anandaraj.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS097",
+    "name": "Dr. Suriya M",
+    "phone": "9486324662",
+    "designation": "Associate Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "suriya.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS110",
+    "name": "Dr. Sarfaraz Ahmed A",
+    "phone": "9894819871",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "sarfaraz.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS084",
+    "name": "Dr. Yuvaraj S",
+    "phone": "9659842451",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "yuvaraj.scse@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS012",
+    "name": "Dr. Sreemathy J",
+    "phone": "9843596020",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "sreemathy.j@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS111",
+    "name": "Dr. Praveen Kumar M",
+    "phone": "9566989694",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "praveenkumar.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCY001",
+    "name": "Dr. Suresh Kumar K",
+    "phone": "9488886661",
+    "designation": "Associate Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "sureshkumar.k@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS004",
+    "name": "Dr. Niranjani V",
+    "phone": "7373090434",
+    "designation": "Assistant professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "niranjani.v@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS009",
+    "name": "Dr. Saranya N",
+    "phone": "9994066232",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "saranya.n@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS091",
+    "name": "Dr. Mohanraj A",
+    "phone": "9976024747",
+    "designation": "Assistant professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "mohanraj.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS033",
+    "name": "Dr. Sampath Kumar S",
+    "phone": "8838294783",
+    "designation": "Associate Professor",
+    "original_dept": "CYS",
+    "dept": "CYS",
+    "email": "hodcys@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS003",
+    "name": "Dr. Yasotha S",
+    "phone": "9994287190",
+    "designation": "Associate Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "yasotha.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC042",
+    "name": "Dr. Shanmuga Sundaram N",
+    "phone": null,
+    "designation": "Assistant Professor",
+    "original_dept": null,
+    "dept": "S&H",
+    "email": null,
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC079",
+    "name": "Dr. Kumareshan N",
+    "phone": "9976946936",
+    "designation": "Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "kumareshan.n@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC056",
+    "name": "Dr. Michaelraj Kingston R",
+    "phone": "9486807558",
+    "designation": "Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "michaelrajkingston@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC088",
+    "name": "Dr. Venkataramanan C",
+    "phone": "9790328341",
+    "designation": "Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "venkataramanan.c@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC097",
+    "name": "Dr. Muthukumaran N",
+    "phone": "9952203887",
+    "designation": "Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "muthukumaran.n@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC105",
+    "name": "Dr. Priya L",
+    "phone": "9791818444",
+    "designation": "Professor",
+    "original_dept": "ECE",
+    "dept": "CFRD",
+    "email": "priya.l@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC109",
+    "name": "Dr. Babu Karuppiah A",
+    "phone": "8072158474",
+    "designation": "Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "babukaruppiah.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEE012",
+    "name": "Dr. Teresa V V",
+    "phone": "9487164516",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "teresa@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC080",
+    "name": "Dr. Rajesha Narasimha Muruthy",
+    "phone": "9700217247",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "rajesha.n@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECEPLC021",
+    "name": "Dr. Arun J",
+    "phone": "8428797979",
+    "designation": "Associate Director  Corporate Relation  and Placements",
+    "original_dept": "PLACEMENT",
+    "dept": "PLACEMENT",
+    "email": "arun.j@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC002",
+    "name": "Dr. Mohankumar M",
+    "phone": "9994300025",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "mohankumar.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC017",
+    "name": "Dr. Thamaraimanalan T",
+    "phone": "9962502777",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "thamaraimanalan.t@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC093",
+    "name": "Dr. Ram Kumar S",
+    "phone": "9894815528",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "ramkumar.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC016",
+    "name": "Dr. Dhana Sekaran S",
+    "phone": "9787828210",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "dhanasekaran.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC024",
+    "name": "Dr. Anand Kumar V",
+    "phone": "9944030606",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "anandkumar.v@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC099",
+    "name": "Dr. Suganthi Evangeline C",
+    "phone": "9677539304",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "suganthi.c@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC074",
+    "name": "Dr. Ramalingam S",
+    "phone": "9994442064",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "ramalingam.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC086",
+    "name": "Dr. Kiruthika V",
+    "phone": "9842999837",
+    "designation": "Associate professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "kiruthika.v@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC113",
+    "name": "Dr. Saravanaselvan A",
+    "phone": "7339163925",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "saravanaselvan.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC114",
+    "name": "Dr. Arumugam N",
+    "phone": "7904727075",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "arumugam.n@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC078",
+    "name": "Dr. Tamilselvi P",
+    "phone": "6380603794",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "tamilselvi.p@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC014",
+    "name": "Dr. Suganyadevi K",
+    "phone": "7708016040",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "suganyadevi.k@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC066",
+    "name": "Dr. Saravanan M",
+    "phone": "9842582774",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "saravanan.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC110",
+    "name": "Dr. Saranya S",
+    "phone": null,
+    "designation": "Assistant Professor",
+    "original_dept": null,
+    "dept": "S&H",
+    "email": null,
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECEPR001",
+    "name": "Dr. Sudha Mohanram",
+    "phone": "9876543210",
+    "designation": "Principal",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "principal1@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEE003",
+    "name": "Dr. Rajan Babu W",
+    "phone": "9942815340",
+    "designation": "HOD",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "hodeee@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEE026",
+    "name": "Dr. Gunapriya D",
+    "phone": "9942932861",
+    "designation": "Associate Professor",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "gunapriya.d@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEE027",
+    "name": "Dr.  Geetha M",
+    "phone": "9600680004",
+    "designation": "Assistant Professor",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "geetha.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEE011",
+    "name": "Dr. Anbarasu P",
+    "phone": "9944888720",
+    "designation": "Assistant Professor",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "anbarasu.p@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEE002",
+    "name": "Dr. Pushpalatha N",
+    "phone": "9095075244",
+    "designation": "Assistant Professor",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "pushpalatha.n@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEE005",
+    "name": "Dr. Sheikameer Batcha S",
+    "phone": "9159095666",
+    "designation": "Assistant Professor",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "sheikameerbatcha.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS152",
+    "name": "Dr. Siamala Devi S",
+    "phone": "8508697827",
+    "designation": "Professor & Head",
+    "original_dept": "IT",
+    "dept": "IT",
+    "email": "hodit@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETIT014",
+    "name": "Dr. Saranya V",
+    "phone": "9488102208",
+    "designation": "Associate Professor",
+    "original_dept": "IT",
+    "dept": "IT",
+    "email": "saranya.v@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETIT017",
+    "name": "Dr. Kalpana P",
+    "phone": null,
+    "designation": "Assistant Professor",
+    "original_dept": null,
+    "dept": "S&H",
+    "email": null,
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETIT006",
+    "name": "Dr. Jayapratha T",
+    "phone": "9843448611",
+    "designation": "Assistant Professor",
+    "original_dept": "IT",
+    "dept": "IT",
+    "email": "jayapratha.t@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS029",
+    "name": "Dr. Poonkodi R",
+    "phone": "9500295042",
+    "designation": "Assistant Professor",
+    "original_dept": "IT",
+    "dept": "IT",
+    "email": "poonkodi.r@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS093",
+    "name": "Dr. Saranya D",
+    "phone": "9003358347",
+    "designation": "Assistant Professor",
+    "original_dept": "IT",
+    "dept": "IT",
+    "email": "saranya.dcse@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME059",
+    "name": "Dr. Bipin Kumar Singh",
+    "phone": "8392006007",
+    "designation": "Assistant Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "bipinkumarsingh@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME057",
+    "name": "Dr. Ganeshan P",
+    "phone": "8124929100",
+    "designation": "Professor",
+    "original_dept": "Mech",
+    "dept": "CFRD",
+    "email": "ganeshan.p@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME004",
+    "name": "Dr. Ganeshkumar S",
+    "phone": "8667824362",
+    "designation": "Associate Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "ganeshkumar.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME003",
+    "name": "Dr. Gokilakrishnan G",
+    "phone": "8883930899",
+    "designation": "Associate Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "gokilakrishnan.g@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECEPLC018",
+    "name": "Dr. Karthikeyan M",
+    "phone": "9952144410",
+    "designation": "Associate Director - IR",
+    "original_dept": "Mech",
+    "dept": "IR",
+    "email": "internationalrelations@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECEDN001",
+    "name": "Dr. Karuppusami G",
+    "phone": "9894606677",
+    "designation": "Professor - Dean Research & Outreach",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "karuppusami.g@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME058",
+    "name": "Dr. Miller Jothi N K",
+    "phone": "8825904942",
+    "designation": "Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "millerjothi.nk@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME030",
+    "name": "Dr. Naveenprabhu V",
+    "phone": "9842292985",
+    "designation": "Associate Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "naveenprabhu.v@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME018",
+    "name": "Dr. Ramakrishnan T",
+    "phone": "9976139414",
+    "designation": "Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "ramakrishnan.t@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME014",
+    "name": "Dr. Sathish K",
+    "phone": "7402252665",
+    "designation": "Assistant Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "sathish.k@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCE002",
+    "name": "Dr. Sugumaran B",
+    "phone": "9952425359",
+    "designation": "Associate Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "hodcivil@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME009",
+    "name": "Dr. Suresh Babu Y",
+    "phone": "9842895216",
+    "designation": "Associate Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "sureshbabu.y@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME005",
+    "name": "Dr. Suresh Kumar R",
+    "phone": "8508765210",
+    "designation": "HOD",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "hodmech@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME063",
+    "name": "Dr. Suresh R K",
+    "phone": "9442110920",
+    "designation": "Dean-Academics",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "deanacademics@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME061",
+    "name": "Dr. Venkatesh S",
+    "phone": "9790530731",
+    "designation": "Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "venkatesh.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCH012",
+    "name": "Dr. Arul V",
+    "phone": "7550120606",
+    "designation": "Assistant Professor",
+    "original_dept": "S&H",
+    "dept": "S&H",
+    "email": "arul.v@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCH014",
+    "name": "Dr. Kayalvizhi R",
+    "phone": "9600707220",
+    "designation": "Assistant Professor",
+    "original_dept": "S&H",
+    "dept": "S&H",
+    "email": "kayalvizhi.r@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCH015",
+    "name": "Dr. Sivagurusundar R",
+    "phone": "9080293887",
+    "designation": "Assistant Professor",
+    "original_dept": "S&H",
+    "dept": "S&H",
+    "email": "sivagurusundar.r@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCH013",
+    "name": "Dr. Thillaikkarasi D",
+    "phone": "9994498706",
+    "designation": "Assistant professor",
+    "original_dept": "S&H",
+    "dept": "S&H",
+    "email": "thillaikkarasi.d@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEN007",
+    "name": "Dr. Akila T",
+    "phone": "9976116195",
+    "designation": "Assistant professor",
+    "original_dept": "S&H",
+    "dept": "S&H",
+    "email": "akila.t@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEN008",
+    "name": "Dr. Kavitha N",
+    "phone": "8667703156",
+    "designation": "Associate Professor",
+    "original_dept": "S&H",
+    "dept": "S&H",
+    "email": "kavithavarthanan@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEN010",
+    "name": "Dr. Malathy R",
+    "phone": "9751699209",
+    "designation": "Assistant Professor",
+    "original_dept": "English",
+    "dept": "S&H",
+    "email": "malathy.r@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEN006",
+    "name": "Dr. Priya K M",
+    "phone": "9750014614",
+    "designation": "Associate Professor",
+    "original_dept": "English",
+    "dept": "S&H",
+    "email": "priya.k.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEN001",
+    "name": "Dr. Shajitha Banu A",
+    "phone": "9003340772",
+    "designation": "Associate Professor",
+    "original_dept": "English",
+    "dept": "S&H",
+    "email": "shajithabanu.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEN017",
+    "name": "Dr. Vani S",
+    "phone": "9787041641",
+    "designation": "Assistant professor",
+    "original_dept": "English",
+    "dept": "S&H",
+    "email": "vani.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA017",
+    "name": "Dr. Gokila C",
+    "phone": "9095568653",
+    "designation": "Assistant Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "gokila.c@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA009",
+    "name": "Dr. Gowri J",
+    "phone": "9500714113",
+    "designation": "Assistant professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "gowri.j@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA011",
+    "name": "Dr. Hemalatha R",
+    "phone": "9688078079",
+    "designation": "Assistant professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "hemalatha.r@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA002",
+    "name": "Dr. Maheswari R",
+    "phone": "9976633443",
+    "designation": "Associate professor &_x000d_\nHead",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "hodmaths@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA008",
+    "name": "Dr. Murugavalli N",
+    "phone": "9095541756",
+    "designation": "Associate Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "murugavalli.n@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA003",
+    "name": "Dr. Revathy A",
+    "phone": "9942661803",
+    "designation": "Assistant Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "revathy.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA018",
+    "name": "Dr. Sindhu M P",
+    "phone": "8012671028",
+    "designation": "Assistant Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "sindhu.mp@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA004",
+    "name": "Dr. Sivaranjani K",
+    "phone": "8675502094",
+    "designation": "Assistant professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "sivaranjani.k@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA013",
+    "name": "Dr. Sree Parimala R",
+    "phone": "8973340455",
+    "designation": "Associate Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "sreeparimala.r@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA020",
+    "name": "Dr. Tamilarasi M",
+    "phone": "9655968116",
+    "designation": "Assistant Professor",
+    "original_dept": "MATHS",
+    "dept": "CFRD",
+    "email": "tamilarasi.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA007",
+    "name": "Dr. Valliammal N",
+    "phone": "9976116183",
+    "designation": "Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "valliammal.n@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA019",
+    "name": "Dr. Vennila B",
+    "phone": "9597160470",
+    "designation": "Associate Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "vennila.b@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA022",
+    "name": "Dr. Vennila R",
+    "phone": "9894831135",
+    "designation": "Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "vennila.r@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA023",
+    "name": "Dr. Vinnarasi S",
+    "phone": "9500658205",
+    "designation": "Assistant Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "vinnarasi.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA010",
+    "name": "Dr. Shalini M M",
+    "phone": "9047873846",
+    "designation": "Assistant Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "shalini.m.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETPH012",
+    "name": "Dr. Krishnamoorthy N",
+    "phone": "9843457822",
+    "designation": "Associate Professor",
+    "original_dept": "PHYSICS",
+    "dept": "S&H",
+    "email": "krishnamoorthy.n@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETPH005",
+    "name": "Dr. Sangeetha R K",
+    "phone": "9566419358",
+    "designation": "Associate Professor",
+    "original_dept": "S&H",
+    "dept": "S&H",
+    "email": "sangeetha@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETPH013",
+    "name": "Dr. Selvakumar B",
+    "phone": "9597004086",
+    "designation": "Associate Professor",
+    "original_dept": "PHYSICS",
+    "dept": "S&H",
+    "email": "selvakumar.b@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETPH016",
+    "name": "Dr. Sivakami A",
+    "phone": "9176839603",
+    "designation": "ASSOCIATE PROFESSOR",
+    "original_dept": "PHYSICS",
+    "dept": "S&H",
+    "email": "sivakami.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETPH001",
+    "name": "Dr. Suresh R",
+    "phone": "9486411599",
+    "designation": "Professor & HOD",
+    "original_dept": "PHYSICS",
+    "dept": "S&H",
+    "email": "suresh.r@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETPH006",
+    "name": "Dr. Yogeswari B",
+    "phone": "8754944424",
+    "designation": "Professor",
+    "original_dept": "PHYSICS",
+    "dept": "S&H",
+    "email": "yogeshwari.b@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCS123",
+    "name": "Ms. Anitha E",
+    "phone": "9865830326",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "anitha.e@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS131",
+    "name": "Ms. Rajalakshmi S",
+    "phone": "6383554658",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "rajalakshmi.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD004",
+    "name": "Ms. Parvathy K",
+    "phone": "8940380870",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "parvathy.k@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD021",
+    "name": "Ms. Geetha Rajakumari R",
+    "phone": "9600562989",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "geetharajakumari.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD025",
+    "name": "Ms. Pooranam N",
+    "phone": "7373950869",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "pooranam.n@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD023",
+    "name": "Mr. Divakar R",
+    "phone": "9361868798",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "divakar.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD027",
+    "name": "Ms. Durga Devi G",
+    "phone": "9597631383",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "durgadevi.g@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD031",
+    "name": "Ms. Hemamalini D",
+    "phone": "9789329423",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "hemamalini.d@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD032",
+    "name": "Ms. Sushma V P",
+    "phone": "9600736153",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "sushma.vp@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCB013",
+    "name": "Ms. Bhuvaneshwari G",
+    "phone": "8883923311",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "bhuvaneshwari.g@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM004",
+    "name": "Ms. Preethi P",
+    "phone": "8608721755",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "preethi.p@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM005",
+    "name": "Ms. Sindhuja S",
+    "phone": "9994100510",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "sindhuja.saiml@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM006",
+    "name": "Ms. Kalaivani T",
+    "phone": "9486684191",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "kalaivani.t@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM012",
+    "name": "Mr. Vikkram R",
+    "phone": "9488778858",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "vikkram.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM011",
+    "name": "Ms. Suganya A",
+    "phone": "9047797814",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "suganya.a@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM008",
+    "name": "Ms. Sandhya G",
+    "phone": "9944714665",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "sandhya.g@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS086",
+    "name": "Ms. Sreeja G G",
+    "phone": null,
+    "designation": "Assistant Professor",
+    "original_dept": null,
+    "dept": "S&H",
+    "email": null,
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD005",
+    "name": "Ms. Banu Priya N",
+    "phone": "8610452577",
+    "designation": "Assistant professor",
+    "original_dept": "CCE",
+    "dept": "CCE",
+    "email": "banupriya.n@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCC006",
+    "name": "Ms. Preethi R",
+    "phone": "9894349009",
+    "designation": "Assistant professor",
+    "original_dept": "CCE",
+    "dept": "CCE",
+    "email": "preethi.rcce@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM014",
+    "name": "Ms. Praveena A",
+    "phone": "9965545508",
+    "designation": "Assistant Professor",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "praveena.a@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS026",
+    "name": "Ms. Anuradha B",
+    "phone": "8344111150",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "saradha.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECEPLC008",
+    "name": "Ms. Kalaiselvi M",
+    "phone": "9629835800",
+    "designation": "APTITUDE TRAINER",
+    "original_dept": "Placement",
+    "dept": "CSE",
+    "email": "kalaiselvi@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS078",
+    "name": "Mr. Saravanan B",
+    "phone": "9047775947",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "saravanan.bcse@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS127",
+    "name": "Ms. Agalya K",
+    "phone": "9655242293",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "agalya.k@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS129",
+    "name": "Mr. Karthick Raja M",
+    "phone": "8754941138",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "karthickraja.m@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS140",
+    "name": "Mr. Arunprakash P",
+    "phone": "8870274284",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "arunprakash.p@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS183",
+    "name": "Mr. Kirubakaran R",
+    "phone": "9629026910",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "kirubakaran.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS184",
+    "name": "Mr. Karthick R",
+    "phone": "8939806334",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "karthick.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS088",
+    "name": "Ms. Suchithra B",
+    "phone": "9003424361",
+    "designation": "Assisstant Professor",
+    "original_dept": "CYS",
+    "dept": "CYS",
+    "email": "suchithra.b@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC041",
+    "name": "Mr. Venugopal E",
+    "phone": "9894743267",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "venugopal@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC029",
+    "name": "Mr. Vivek Kumar M",
+    "phone": "9042622379",
+    "designation": "Assistant Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "vivek.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC039",
+    "name": "Mr. Ramesh A",
+    "phone": "9944163613",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "ramesh.a@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC044",
+    "name": "Lt. Mahaboob M",
+    "phone": "9500635060",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "mahaboob.m@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEE024",
+    "name": "Mr. Gokulavasan B",
+    "phone": "9159531749",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "gokulavasan.b@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC045",
+    "name": "Ms. Faridha Banu D",
+    "phone": "8056237914",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "faridhabanu.d@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC084",
+    "name": "Mr. Surendarkumar S",
+    "phone": "9943572207",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "surenderkumar.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECEPLC025",
+    "name": "Mr. Sakthikumar R",
+    "phone": "9600798294",
+    "designation": "APTITUDE TRAINER",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "sakthikumar.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC111",
+    "name": "Mr. Tamil Selvan S",
+    "phone": "8973573463",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "tamilselvan.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEE004",
+    "name": "Mr. Premkumar R",
+    "phone": "9566426478",
+    "designation": "Assistant Professor",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "premkumar.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEE006",
+    "name": "Mr. Hariharan R",
+    "phone": "9698660881",
+    "designation": "Assistant Professor",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "hariharan.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEE010",
+    "name": "Mr. Raj Thilak K",
+    "phone": "9976780003",
+    "designation": "Assistant Professor",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "rajthilak.k@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEE013",
+    "name": "Mr. Mohanraj C",
+    "phone": "9788680045",
+    "designation": "Assistant Professor",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "mohanraj.c@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETIT016",
+    "name": "Mr. Swaminathan G",
+    "phone": "8015886008",
+    "designation": "Assistant Professor",
+    "original_dept": "IT",
+    "dept": "IT",
+    "email": "swaminathan.g@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETME053",
+    "name": "Mr. Vishnu Sakravarthy N",
+    "phone": "8056743107",
+    "designation": "Assistant Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "vishnu.n@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETMA012",
+    "name": "Ms. Akiladevi N",
+    "phone": "9750399406",
+    "designation": "Assistant Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "akiladevi.n@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETMA005",
+    "name": "Ms. Deepa V",
+    "phone": "9788620982",
+    "designation": "Assistant Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "deepa.v@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS075",
+    "name": "Ms. Gowri S",
+    "phone": "8760480524",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "gowri.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD007",
+    "name": "Ms. Sowmiya M",
+    "phone": "9965182655",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "sowmiya.m@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD010",
+    "name": "Ms. Sowmiya S",
+    "phone": "9442859211",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "sowmiya.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD018",
+    "name": "Ms. Soundarya A",
+    "phone": "6381727891",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "soundarya.a@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD017",
+    "name": "Ms. Sangavi V",
+    "phone": "9080528781",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "sangavi.v@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD029",
+    "name": "Ms. Parimalam K",
+    "phone": "7010676649",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "parimalam.k@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD030",
+    "name": "Ms. Saranya C",
+    "phone": "9942215138",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "saranya.c@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM010",
+    "name": "Ms. Sharmila G",
+    "phone": "8508445001",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "sharmila.g@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM018",
+    "name": "Mr. Gowri Sankar M",
+    "phone": "8610844900",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "gowrisanker.m@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC070",
+    "name": "Ms. Dency Flora G",
+    "phone": "8015051625",
+    "designation": "Assistant Professor",
+    "original_dept": "CCE",
+    "dept": "CCE",
+    "email": "dencyflora.g@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC092",
+    "name": "Ms. Megala R",
+    "phone": "7708284661",
+    "designation": "Assistant Professor",
+    "original_dept": "CCE",
+    "dept": "CCE",
+    "email": "megala.p@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCC001",
+    "name": "Ms. Megala P",
+    "phone": "7708284661",
+    "designation": "Assistant Professor",
+    "original_dept": "CCE",
+    "dept": "CCE",
+    "email": "megala.p@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCB006",
+    "name": "Ms. Saranya Ekambaram",
+    "phone": "9715224000",
+    "designation": "Assistant Professor",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "saranya.e@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS080",
+    "name": "Ms. Priyanka G",
+    "phone": "8973492249",
+    "designation": "ASSISTANT PROF",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "priyanka.gcse@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCB004",
+    "name": "Ms. Ramya D",
+    "phone": "9600753681",
+    "designation": "Assistant Professor",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "ramya.d@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCB010",
+    "name": "Mr. Mohanraj M",
+    "phone": "7010531709",
+    "designation": "Assistant Professor",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "mohanraj.m@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS068",
+    "name": "Ms. Gayathri N",
+    "phone": "9787041812",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "gayathri.n@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS079",
+    "name": "Ms. Keerthika J",
+    "phone": "9942244649",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "keerthika.jcse@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS098",
+    "name": "Ms. Mohana Priya D",
+    "phone": "9524811961",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "mohanapriya.d@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS125",
+    "name": "Mr. Lakshmanan V",
+    "phone": "9865707961",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "lakshmanan.v@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS135",
+    "name": "Ms. Saranya E",
+    "phone": "9788235660",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "e.saranya@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS133",
+    "name": "Ms. Suganya Mahalakshmi A",
+    "phone": "9095294086",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "suganyamahalakshmi.a@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS136",
+    "name": "Ms. Abinaya M",
+    "phone": "8012340696",
+    "designation": "Assistant professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "abinaya.m@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS177",
+    "name": "Ms. Gopika N",
+    "phone": "9788575653",
+    "designation": "Assistant professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "priyanka.n@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS134",
+    "name": "Ms. Gomathi B",
+    "phone": "9600541258",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "gomathi.b@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC049",
+    "name": "Mr. Parthipan V",
+    "phone": "9842669297",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "parthipan.v@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC076",
+    "name": "Mr. Sakthikumar B",
+    "phone": "7661811199",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "sakthikumar.b@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC087",
+    "name": "Ms. Shanmuga Priya A",
+    "phone": "9659835805",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "shanmugapriya.a@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC090",
+    "name": "Ms. Mohanapriya A",
+    "phone": "8675992725",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "mohanapriya.a@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS126",
+    "name": "Mr. VASANTHA KUMAR R",
+    "phone": "8489268333",
+    "designation": "Assistant Professor",
+    "original_dept": "IT",
+    "dept": "IT",
+    "email": "vasanthakumar.c@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS119",
+    "name": "Ms. Minu Balakrishnan",
+    "phone": "7418940141",
+    "designation": "Assistant Professor",
+    "original_dept": "IT",
+    "dept": "CFRD",
+    "email": "minubalakrishnan@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS130",
+    "name": "Mr. Prakash U",
+    "phone": "9942932159",
+    "designation": "Assistant Professor",
+    "original_dept": "IT",
+    "dept": "IT",
+    "email": "prakash.u@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETME033",
+    "name": "Mr. Gokul S",
+    "phone": "7502931447",
+    "designation": "Assistant Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "gokul.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETME054",
+    "name": "Mr. Gowtham S",
+    "phone": "9659399667",
+    "designation": "Assistant Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "gowtham.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETME023",
+    "name": "Mr. Vimal A",
+    "phone": "9790691728",
+    "designation": "Assistant Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "vimal.a@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS146",
+    "name": "Mr. Sridharan S",
+    "phone": "7708229290",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "sridharan.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD039",
+    "name": "Mr. Stephen Rufus A",
+    "phone": "9080990669",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "stephenrufus.a@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD034",
+    "name": "Ms. Rashmi AV",
+    "phone": "9498844188",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "rashmi.av@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD037",
+    "name": "Ms. Meignana Priya G",
+    "phone": "9443035917",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "meignanapriya.g@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD035",
+    "name": "Mr. Monish S",
+    "phone": "9344763566",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "monish.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD033",
+    "name": "Mr. Masilamani M",
+    "phone": "9677803560",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "masilamani.m@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCE008",
+    "name": "Mr. Siva K P",
+    "phone": "9597097443",
+    "designation": "Assistant Professor",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "siva.k.p@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS040",
+    "name": "Mr. Giridharan R",
+    "phone": "8940213161",
+    "designation": "Assistant professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "giridharan.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS182",
+    "name": "Mr. Sabarigirivason K",
+    "phone": "9750537840",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "sabarigirivason.k@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS179",
+    "name": "Ms. Anusha Devi P",
+    "phone": "8248312315",
+    "designation": "Assistant Professor",
+    "original_dept": "AI & DS",
+    "dept": "CSE",
+    "email": "anushadevi.p@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS169",
+    "name": "Mr. Aravind S",
+    "phone": "8610794726",
+    "designation": "Assistant Professor",
+    "original_dept": "CYS",
+    "dept": "CFRD",
+    "email": "aravind.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM021",
+    "name": "Ms. Harshitha",
+    "phone": "8015279808",
+    "designation": "Assistant Professor",
+    "original_dept": "CYS",
+    "dept": "CYS",
+    "email": "harshitha.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC098",
+    "name": "Mr. Viswanathan V",
+    "phone": "9952841329",
+    "designation": "Assistant Professor",
+    "original_dept": "IT",
+    "dept": "IT",
+    "email": "viswanathan.v@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCE013",
+    "name": "Mr. Pradeep Kumar D",
+    "phone": "9659098318",
+    "designation": "Assistant Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "pradeep.d@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD028",
+    "name": "Mr. Sam Peter S",
+    "phone": "9500307672",
+    "designation": "Assistant Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "sampeter.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCC003",
+    "name": "Mr. Arun R",
+    "phone": "9952152624",
+    "designation": "Assistant professor",
+    "original_dept": "CCE",
+    "dept": "CCE",
+    "email": "arun.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC077",
+    "name": "Ms. Ishwarya Niranjana M",
+    "phone": "8015602781",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "ishwaryaniranjana.m@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC106",
+    "name": "Ms. Nivethitha T",
+    "phone": "8608899681",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "nivethitha.t@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEE001",
+    "name": "Mr. Hemananth B",
+    "phone": "8526527750",
+    "designation": "Assistant Professor",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "hemananth.b@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETME046",
+    "name": "Mr. Vivek R",
+    "phone": "9042622379",
+    "designation": "Assistant Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "vivek.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD040",
+    "name": "Dr. Ananthanarayanan V",
+    "phone": "9443251227",
+    "designation": "Professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "ananthanarayanan.v@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCY004",
+    "name": "Dr. Azhaguramyaa V R",
+    "phone": "9942796017",
+    "designation": "Assistant Professor",
+    "original_dept": "CYS",
+    "dept": "CYS",
+    "email": "azhaguramyaa.vr@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC117",
+    "name": "Dr. Vijeyakumar K N",
+    "phone": "9942377050",
+    "designation": "Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "vijeyakumar@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC123",
+    "name": "Dr. Kirubha A",
+    "phone": "9566521518",
+    "designation": "Associate Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "kiruba.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEC102",
+    "name": "Dr. Vignesh A",
+    "phone": "9677606973",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "vignesh.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETME064",
+    "name": "Dr. Magesh Kannan V",
+    "phone": "9865050507",
+    "designation": "Associate Professor",
+    "original_dept": "Mech",
+    "dept": "IQAC",
+    "email": "vmk@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETPH017",
+    "name": "Ms. Santhiya P",
+    "phone": "9791621945",
+    "designation": "Assisatnt Professor",
+    "original_dept": "PHYSICS",
+    "dept": "CFRD",
+    "email": "santhiya.p@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEN019",
+    "name": "Dr. Elakkiya S",
+    "phone": "9842666649",
+    "designation": "AP",
+    "original_dept": "English",
+    "dept": "S&H",
+    "email": "elakkiya.s@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETEN018",
+    "name": "Dr. Sujatha B",
+    "phone": "7305456213",
+    "designation": "Asso.Professor",
+    "original_dept": "English",
+    "dept": "S&H",
+    "email": "sujatha.b@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA025",
+    "name": "Dr. Sakkaravathi K",
+    "phone": "9965348076",
+    "designation": "Associate Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "sakkaravarthi.k@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETMA024",
+    "name": "Dr. Subashini A",
+    "phone": "9940930848",
+    "designation": "Assistant Professor",
+    "original_dept": "MATHS",
+    "dept": "S&H",
+    "email": "subashini.a@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETAM020",
+    "name": "Ms. Shanmugapriya G",
+    "phone": "9994301403",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "shanmugapriya.g@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC121",
+    "name": "Mr. Anand P S",
+    "phone": "8848064748",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "ECE",
+    "email": "anand.ps@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC122",
+    "name": "Mr. Samraj S",
+    "phone": "9698027198",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "CFRD",
+    "email": "samraj.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETME065",
+    "name": "Mr. Tamil Selvan M",
+    "phone": "8508584225",
+    "designation": "Assistant Professor",
+    "original_dept": "Mech",
+    "dept": "CFRD",
+    "email": "tamilselvan.m@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS145",
+    "name": "Ms. Ishwarya T M",
+    "phone": "8574565875",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "ishwarya.tm@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAD036",
+    "name": "Mr. Sarvesh Nath K",
+    "phone": "8610384077",
+    "designation": "Assistant professor",
+    "original_dept": "AI&DS",
+    "dept": "AIDS",
+    "email": "sarveshnath.k@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM019",
+    "name": "Mr. Viraja R",
+    "phone": "7598890905",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "virajaravi@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETAM022",
+    "name": "Mr. MOHAMMED RAAYEDH K",
+    "phone": "8807024898",
+    "designation": "Assistant Professor",
+    "original_dept": "AIML",
+    "dept": "AIML",
+    "email": "mohammedraayedh.k@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCY006",
+    "name": "Mr. Arul Prakasham S",
+    "phone": "8547100235",
+    "designation": "Assistant Professor",
+    "original_dept": "CYS",
+    "dept": "CYS",
+    "email": "arulprakasham.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS181",
+    "name": "Ms. Rajeswari R",
+    "phone": "8098022015",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "rajeswari.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS175",
+    "name": "Ms. Lavanya",
+    "phone": "6383063654",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "lavanya.n@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCS185",
+    "name": "Ms. Sowbarnika M",
+    "phone": "8220084608",
+    "designation": "Assistant Professor",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "sowparnika.m@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCY005",
+    "name": "Ms. Dharani S",
+    "phone": "9845213670",
+    "designation": "Assistant Professor",
+    "original_dept": "CYS",
+    "dept": "CYS",
+    "email": "dharani.ks@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETCY003",
+    "name": "Ms. Thirisha S",
+    "phone": "8072261102",
+    "designation": "Assistant Professor",
+    "original_dept": "CYS",
+    "dept": "CYS",
+    "email": "thirisha.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC120",
+    "name": "Ms. Suruthi Krishna T",
+    "phone": "8870192336",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "CFRD",
+    "email": "sruthikrishna.t@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECESS014",
+    "name": "Ms. Senbagavalli K",
+    "phone": "8015383912",
+    "designation": "House Keeping",
+    "original_dept": "HK - Garden",
+    "dept": "COLLEGE MAINTENANCE",
+    "email": "pankagavalli.g@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETEC124",
+    "name": "Ms. Gowthami K",
+    "phone": "9659454522",
+    "designation": "Assistant Professor",
+    "original_dept": "ECE",
+    "dept": "CFRD",
+    "email": "gowthami.k@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECEDRI167",
+    "name": "Mr. Anand N",
+    "phone": "8807561020",
+    "designation": "Driver",
+    "original_dept": "Transport",
+    "dept": "TRANSPORT",
+    "email": "anand.k@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETPH018",
+    "name": "Ms. Muthu Shyamala S",
+    "phone": "7358802049",
+    "designation": "Assistant Professor",
+    "original_dept": "PHYSICS",
+    "dept": "CFRD",
+    "email": "muthushyamala.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECEPOP008",
+    "name": "Dr. Chandran V",
+    "phone": "9790827719",
+    "designation": "Professor of Practice",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "chandran.v@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECEPOP12",
+    "name": "Mr. BHARATHI RAJA A",
+    "phone": "9962099605",
+    "designation": "POP",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "bharathiraja.a@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECEPOP13",
+    "name": "Mr. SHANKARA VARSHITH S",
+    "phone": "7339000830",
+    "designation": "POP",
+    "original_dept": "CSBS",
+    "dept": "CSBS",
+    "email": "shankaravarshith.s@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECEPOP010",
+    "name": "Mr. JEEVA A",
+    "phone": "8795684235",
+    "designation": "Professor of Practice",
+    "original_dept": "CSE",
+    "dept": "CSE",
+    "email": "jeeva.a@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECEPOP004",
+    "name": "Mr. SASIKUMAR R",
+    "phone": "9789793523",
+    "designation": "POP",
+    "original_dept": "EEE",
+    "dept": "EEE",
+    "email": "sasikumar.r@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECEPOP005",
+    "name": "Mr. VIJAI GANESH R P",
+    "phone": "8825621070",
+    "designation": "POP",
+    "original_dept": "IT",
+    "dept": "IT",
+    "email": "vijaiganesh.r.p@sece.ac.in",
+    "type": "Non-Doctorate"
+  },
+  {
+    "emp_id": "SECETME066",
+    "name": "Dr. Muthusamy M",
+    "phone": "8012052331",
+    "designation": "Assistant Professor",
+    "original_dept": "Mech",
+    "dept": "MECH",
+    "email": "muthusamy.m@sece.ac.in",
+    "type": "Doctorate"
+  },
+  {
+    "emp_id": "SECETCH016",
+    "name": "Ms. Santhiya K",
+    "phone": "7305509106",
+    "designation": "Assistant Professor",
+    "original_dept": "S&H",
+    "dept": "S&H",
+    "email": "santhiya.k@sece.ac.in",
+    "type": "Non-Doctorate"
+  }
+]

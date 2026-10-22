@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import staffDirectoryRaw from '@/data/staff_directory.json'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 export const fetchCache = 'force-no-store'
+
+interface StaffContact {
+  email: string | null
+  phone: string | null
+}
 
 export async function GET(request: Request) {
   const token = extractToken(request)
@@ -27,7 +33,7 @@ export async function GET(request: Request) {
       .order('s_no', { ascending: true })
 
     if (dept && dept !== 'all') {
-      query = query.ilike('dept', dept)
+      query = query.ilike('dept', dept.trim())
     }
 
     if (phdOnly) {
@@ -38,9 +44,70 @@ export async function GET(request: Request) {
 
     if (error) throw error
 
-    // Fetch unique departments for filters (only for the selected year)
-    const { data: deptData } = await admin.from('legacy_phd_holders').select('dept').eq('academic_year', year)
-    const departments = Array.from(new Set(deptData?.map(d => d.dept).filter(Boolean))).sort()
+    // Fetch master_faculty to get email and phone
+    const { data: facultyData } = await admin
+      .from('master_faculty')
+      .select('emp_id, name, email, phone')
+
+    const contactByEmpId = new Map<string, StaffContact>()
+    const contactByName = new Map<string, StaffContact>()
+
+    // 1. Preload from staff directory json
+    if (Array.isArray(staffDirectoryRaw)) {
+      for (const s of staffDirectoryRaw as any[]) {
+        if (s.emp_id) {
+          contactByEmpId.set(s.emp_id.trim().toUpperCase(), {
+            email: s.email || null,
+            phone: s.phone || null,
+          })
+        }
+        if (s.name) {
+          contactByName.set(s.name.trim().toLowerCase(), {
+            email: s.email || null,
+            phone: s.phone || null,
+          })
+        }
+      }
+    }
+
+    // 2. Overlay live DB master_faculty (primary source)
+    if (facultyData) {
+      for (const f of facultyData) {
+        if (f.emp_id) {
+          const cleanId = f.emp_id.trim().toUpperCase()
+          const existing = contactByEmpId.get(cleanId)
+          contactByEmpId.set(cleanId, {
+            email: f.email || existing?.email || null,
+            phone: f.phone || existing?.phone || null,
+          })
+        }
+        if (f.name) {
+          const cleanName = f.name.trim().toLowerCase()
+          const existing = contactByName.get(cleanName)
+          contactByName.set(cleanName, {
+            email: f.email || existing?.email || null,
+            phone: f.phone || existing?.phone || null,
+          })
+        }
+      }
+    }
+
+    // 3. Attach email and phone to each record
+    const enrichedData = (data || []).map(item => {
+      const empIdClean = (item.emp_id || '').trim().toUpperCase()
+      const nameClean = (item.name || '').trim().toLowerCase()
+      const contact = contactByEmpId.get(empIdClean) || contactByName.get(nameClean)
+
+      return {
+        ...item,
+        email: contact?.email || null,
+        phone: contact?.phone || null,
+      }
+    })
+
+    // Fetch unique departments for filters
+    const { data: deptData } = await admin.from('legacy_phd_holders').select('dept')
+    const departments = Array.from(new Set(deptData?.map(d => d.dept ? String(d.dept).trim() : '').filter(Boolean))).sort()
 
     // Fetch unique academic years for the dropdown
     const { data: yearData } = await admin.from('legacy_phd_holders').select('academic_year')
@@ -52,7 +119,7 @@ export async function GET(request: Request) {
       years.sort((a, b) => String(b).localeCompare(String(a)))
     }
 
-    return NextResponse.json({ data: data || [], departments, years })
+    return NextResponse.json({ data: enrichedData, departments, years })
   } catch (error: any) {
     console.error('Fetch error:', error)
     return NextResponse.json({ error: error.message || 'Fetch failed' }, { status: 500 })

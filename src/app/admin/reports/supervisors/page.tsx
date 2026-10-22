@@ -12,12 +12,13 @@ export default function SupervisorsReportPage() {
   
   const [supervisors, setSupervisors] = useState<any[]>([])
   const [supYears, setSupYears] = useState<string[]>([])
-  const [activeSupYear, setActivePatYear] = useState<string>('all')
+  const [activeSupYear, setActiveSupYear] = useState<string>('all')
   const [departments, setDepartments] = useState<string[]>([])
   const [activeDept, setActiveDept] = useState<string>('all')
+  const [search, setSearch] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [visibleSupCount, setVisiblePatCount] = useState(30)
+  const [visibleSupCount, setVisibleSupCount] = useState(30)
 
   const [loading, setLoading] = useState(true)
   const [importing, setImporting] = useState(false)
@@ -27,7 +28,7 @@ export default function SupervisorsReportPage() {
   const fetchSupervisors = useCallback(async (year: string, dept: string, sDate: string, eDate: string, tok: string) => {
     try {
       setSupervisors([])
-      setVisiblePatCount(30)
+      setVisibleSupCount(30)
       const yearQuery = year === 'all' ? '' : year
       const deptQuery = dept === 'all' ? '' : encodeURIComponent(dept)
       const sDateQuery = sDate ? `&startDate=${sDate}` : ''
@@ -37,9 +38,11 @@ export default function SupervisorsReportPage() {
         const { data, departments: deptList, years: yearList } = await res.json()
         setSupervisors(data || [])
         
-        if (year === 'all' && dept === 'all') {
-          setSupYears(yearList || [])
-          setDepartments(deptList || [])
+        if (yearList && yearList.length > 0) {
+          setSupYears(prev => prev.length > 0 ? prev : yearList)
+        }
+        if (deptList && deptList.length > 0) {
+          setDepartments(prev => prev.length > 0 ? prev : deptList)
         }
       } else {
         console.error('Supervisors fetch failed', res.status)
@@ -168,6 +171,17 @@ export default function SupervisorsReportPage() {
 
   if (loading) return <div className="p-8 text-center"><div className="w-8 h-8 mx-auto border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>
 
+  const filteredSupervisors = supervisors.filter(p => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return (
+      (p.supervisor_name || '').toLowerCase().includes(q) ||
+      (p.research_area || '').toLowerCase().includes(q) ||
+      (p.ref_no || '').toLowerCase().includes(q) ||
+      (p.department || '').toLowerCase().includes(q)
+    )
+  })
+
   return (
     <div className="min-h-screen bg-slate-50 p-6 font-sans text-slate-900">
       <div className="w-full mx-auto space-y-6">
@@ -212,7 +226,7 @@ export default function SupervisorsReportPage() {
             <div className="flex flex-wrap items-center gap-3 p-3 w-full md:w-auto shrink-0">
               <select 
                 value={activeSupYear} 
-                onChange={(e) => setActivePatYear(e.target.value)}
+                onChange={(e) => setActiveSupYear(e.target.value)}
                 className="w-full md:w-auto bg-white border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Years</option>
@@ -220,16 +234,17 @@ export default function SupervisorsReportPage() {
                   <option key={yr} value={yr}>{yr}</option>
                 ))}
               </select>
-              <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-1">
-                <span className="text-xs font-semibold text-slate-500">From:</span>
-                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="bg-transparent text-slate-700 text-sm font-semibold focus:outline-none" />
-              </div>
-              <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-1">
-                <span className="text-xs font-semibold text-slate-500">To:</span>
-                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="bg-transparent text-slate-700 text-sm font-semibold focus:outline-none" />
-                {(startDate || endDate) && (
-                  <button onClick={() => { setStartDate(''); setEndDate(''); }} className="ml-2 text-slate-400 hover:text-red-500">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              <div className="flex items-center gap-1.5 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5">
+                <input 
+                  type="text" 
+                  placeholder="Search supervisor, area, ref..." 
+                  value={search} 
+                  onChange={e => setSearch(e.target.value)}
+                  className="bg-transparent text-sm focus:outline-none w-48"
+                />
+                {search && (
+                  <button onClick={() => setSearch('')} className="text-slate-400 hover:text-red-500">
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
@@ -245,7 +260,7 @@ export default function SupervisorsReportPage() {
               </select>
 
               <div className="flex items-center justify-center px-3 py-2 bg-[#0A3D8F]/10 text-[#0A3D8F] text-sm font-bold rounded-lg border border-[#0A3D8F]/20 whitespace-nowrap">
-                {supervisors.length} {supervisors.length === 1 ? 'Result' : 'Results'}
+                {filteredSupervisors.length} {filteredSupervisors.length === 1 ? 'Result' : 'Results'}
               </div>
             </div>
           </div>
@@ -258,14 +273,14 @@ export default function SupervisorsReportPage() {
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Ref No.</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Supervisor Name</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800 min-w-[200px]">Research Area</th>
-                  <th className="px-4 py-3 font-semibold border-r border-blue-800">Current Scholars</th>
-                  <th className="px-4 py-3 font-semibold border-r border-blue-800">Slots Available</th>
+                  <th className="px-4 py-3 font-semibold border-r border-blue-800 text-center">Current Scholars</th>
+                  <th className="px-4 py-3 font-semibold border-r border-blue-800 text-center">Slots Available</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {supervisors.length === 0 ? (
-                  <tr><td colSpan={11} className="px-4 py-8 text-center text-slate-500 font-medium">No supervisors found.</td></tr>
-                ) : supervisors.slice(0, visibleSupCount).map((p, idx) => (
+                {filteredSupervisors.length === 0 ? (
+                  <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500 font-medium">No supervisors found.</td></tr>
+                ) : filteredSupervisors.slice(0, visibleSupCount).map((p, idx) => (
                     <tr key={p.id} className="hover:bg-blue-50 transition-colors">
                       <td className="px-4 py-3 border-r border-slate-100 font-medium text-slate-500 text-center">{idx + 1}</td>
                       <td className="px-4 py-3 border-r border-slate-100 font-bold text-slate-700">{p.department}</td>
@@ -278,9 +293,9 @@ export default function SupervisorsReportPage() {
                 ))}
               </tbody>
             </table>
-            {supervisors.length > visibleSupCount && (
+            {filteredSupervisors.length > visibleSupCount && (
               <div className="flex justify-center p-6 border-t border-slate-100">
-                <button onClick={() => setVisiblePatCount(prev => prev + 30)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-2 rounded-xl font-bold transition-colors">
+                <button onClick={() => setVisibleSupCount(prev => prev + 30)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-2 rounded-xl font-bold transition-colors">
                   View More List
                 </button>
               </div>

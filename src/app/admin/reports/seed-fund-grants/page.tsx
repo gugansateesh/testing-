@@ -61,9 +61,11 @@ export default function SeedFundGrantsReportPage() {
         const list = data || []
         setGrants(list)
         setTotalAmount(apiTotal || 0)
-        if (year === 'all' && dept === 'all') {
-          setGrantYears(yearList || [])
-          setDepartments(deptList || [])
+        if (yearList && yearList.length > 0) {
+          setGrantYears(prev => prev.length > 0 ? prev : yearList)
+        }
+        if (deptList && deptList.length > 0) {
+          setDepartments(prev => prev.length > 0 ? prev : deptList)
         }
       } else {
         const errData = await res.json().catch(() => ({}))
@@ -265,8 +267,7 @@ export default function SeedFundGrantsReportPage() {
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-[#0A3D8F] text-white">
                 <tr>
-                  <th className="px-4 py-3 font-semibold border-r border-blue-800">#</th>
-                  <th className="px-4 py-3 font-semibold border-r border-blue-800">S.No</th>
+                  <th className="px-4 py-3 font-semibold border-r border-blue-800 text-center">S.No</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Academic Year</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Dept</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800 min-w-[300px]">Title of the Project</th>
@@ -279,7 +280,7 @@ export default function SeedFundGrantsReportPage() {
               <tbody className="divide-y divide-slate-100">
                 {filteredGrants.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-10 text-center text-slate-500 font-medium">
+                    <td colSpan={8} className="px-4 py-10 text-center text-slate-500 font-medium">
                       {grants.length === 0
                         ? 'No seed fund grants found. Upload "Seed Money, Grants Received.xlsx" to import.'
                         : 'No grants match the current filters.'}
@@ -287,8 +288,7 @@ export default function SeedFundGrantsReportPage() {
                   </tr>
                 ) : filteredGrants.slice(0, visibleCount).map((g, idx) => (
                   <tr key={g.id} className="hover:bg-blue-50 transition-colors">
-                    <td className="px-4 py-3 border-r border-slate-100 font-medium text-slate-400 text-center">{idx + 1}</td>
-                    <td className="px-4 py-3 border-r border-slate-100 text-slate-500 text-center">{g.s_no || '—'}</td>
+                    <td className="px-4 py-3 border-r border-slate-100 font-medium text-slate-500 text-center">{idx + 1}</td>
                     <td className="px-4 py-3 border-r border-slate-100 font-bold text-[#0A3D8F] text-center">{g.academic_year || '—'}</td>
                     <td className="px-4 py-3 border-r border-slate-100 text-slate-600">{g.dept || '—'}</td>
                     <td className="px-4 py-3 border-r border-slate-100 font-medium text-[#0A3D8F] whitespace-normal min-w-[300px]">{g.project_title || '—'}</td>

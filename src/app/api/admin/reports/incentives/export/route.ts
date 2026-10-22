@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     while (true) {
       let q = admin.from('legacy_incentives').select('*')
       if (year && year !== 'all') q = q.eq('incentive_year', year)
-      if (dept && dept !== 'all') q = q.eq('department', dept)
+      if (dept && dept !== 'all') q = q.ilike('department', dept.trim())
       if (startDate) q = q.gte('amount_credited_date', startDate)
       if (endDate) q = q.lte('amount_credited_date', endDate)
 

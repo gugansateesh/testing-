@@ -12,12 +12,13 @@ export default function ScholarsReportPage() {
   
   const [scholars, setScholars] = useState<any[]>([])
   const [schYears, setSchYears] = useState<string[]>([])
-  const [activeSchYear, setActivePatYear] = useState<string>('all')
+  const [activeSchYear, setActiveSchYear] = useState<string>('all')
   const [departments, setDepartments] = useState<string[]>([])
   const [activeDept, setActiveDept] = useState<string>('all')
+  const [search, setSearch] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [visibleSchCount, setVisiblePatCount] = useState(30)
+  const [visibleSchCount, setVisibleSchCount] = useState(30)
 
   const [loading, setLoading] = useState(true)
   const [importing, setImporting] = useState(false)
@@ -27,7 +28,7 @@ export default function ScholarsReportPage() {
   const fetchScholars = useCallback(async (year: string, dept: string, sDate: string, eDate: string, tok: string) => {
     try {
       setScholars([])
-      setVisiblePatCount(30)
+      setVisibleSchCount(30)
       const yearQuery = year === 'all' ? '' : year
       const deptQuery = dept === 'all' ? '' : encodeURIComponent(dept)
       const sDateQuery = sDate ? `&startDate=${sDate}` : ''
@@ -37,9 +38,11 @@ export default function ScholarsReportPage() {
         const { data, departments: deptList, years: yearList } = await res.json()
         setScholars(data || [])
         
-        if (year === 'all' && dept === 'all') {
-          setSchYears(yearList || [])
-          setDepartments(deptList || [])
+        if (yearList && yearList.length > 0) {
+          setSchYears(prev => prev.length > 0 ? prev : yearList)
+        }
+        if (deptList && deptList.length > 0) {
+          setDepartments(prev => prev.length > 0 ? prev : deptList)
         }
       } else {
         console.error('Scholars fetch failed', res.status)
@@ -168,6 +171,17 @@ export default function ScholarsReportPage() {
 
   if (loading) return <div className="p-8 text-center"><div className="w-8 h-8 mx-auto border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>
 
+  const filteredScholars = scholars.filter(p => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return (
+      (p.scholar_name || '').toLowerCase().includes(q) ||
+      (p.supervisor_name || '').toLowerCase().includes(q) ||
+      (p.au_registration_number || '').toLowerCase().includes(q) ||
+      (p.research_centre || '').toLowerCase().includes(q)
+    )
+  })
+
   return (
     <div className="min-h-screen bg-slate-50 p-6 font-sans text-slate-900">
       <div className="w-full mx-auto space-y-6">
@@ -212,7 +226,7 @@ export default function ScholarsReportPage() {
             <div className="flex flex-wrap items-center gap-3 p-3 w-full md:w-auto shrink-0">
               <select 
                 value={activeSchYear} 
-                onChange={(e) => setActivePatYear(e.target.value)}
+                onChange={(e) => setActiveSchYear(e.target.value)}
                 className="w-full md:w-auto bg-white border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Years</option>
@@ -220,16 +234,17 @@ export default function ScholarsReportPage() {
                   <option key={yr} value={yr}>{yr}</option>
                 ))}
               </select>
-              <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-1">
-                <span className="text-xs font-semibold text-slate-500">From:</span>
-                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="bg-transparent text-slate-700 text-sm font-semibold focus:outline-none" />
-              </div>
-              <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-1">
-                <span className="text-xs font-semibold text-slate-500">To:</span>
-                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="bg-transparent text-slate-700 text-sm font-semibold focus:outline-none" />
-                {(startDate || endDate) && (
-                  <button onClick={() => { setStartDate(''); setEndDate(''); }} className="ml-2 text-slate-400 hover:text-red-500">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              <div className="flex items-center gap-1.5 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5">
+                <input 
+                  type="text" 
+                  placeholder="Search scholar, supervisor, reg no..." 
+                  value={search} 
+                  onChange={e => setSearch(e.target.value)}
+                  className="bg-transparent text-sm focus:outline-none w-48"
+                />
+                {search && (
+                  <button onClick={() => setSearch('')} className="text-slate-400 hover:text-red-500">
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
@@ -245,7 +260,7 @@ export default function ScholarsReportPage() {
               </select>
 
               <div className="flex items-center justify-center px-3 py-2 bg-[#0A3D8F]/10 text-[#0A3D8F] text-sm font-bold rounded-lg border border-[#0A3D8F]/20 whitespace-nowrap">
-                {scholars.length} {scholars.length === 1 ? 'Result' : 'Results'}
+                {filteredScholars.length} {filteredScholars.length === 1 ? 'Result' : 'Results'}
               </div>
             </div>
           </div>
@@ -263,9 +278,9 @@ export default function ScholarsReportPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {scholars.length === 0 ? (
-                  <tr><td colSpan={11} className="px-4 py-8 text-center text-slate-500 font-medium">No scholars found.</td></tr>
-                ) : scholars.slice(0, visibleSchCount).map((p, idx) => (
+                {filteredScholars.length === 0 ? (
+                  <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500 font-medium">No scholars found.</td></tr>
+                ) : filteredScholars.slice(0, visibleSchCount).map((p, idx) => (
                     <tr key={p.id} className="hover:bg-blue-50 transition-colors">
                       <td className="px-4 py-3 border-r border-slate-100 font-medium text-slate-500 text-center">{idx + 1}</td>
                       <td className="px-4 py-3 border-r border-slate-100 text-slate-600 text-xs">{p.research_centre}</td>
@@ -278,9 +293,9 @@ export default function ScholarsReportPage() {
                 ))}
               </tbody>
             </table>
-            {scholars.length > visibleSchCount && (
+            {filteredScholars.length > visibleSchCount && (
               <div className="flex justify-center p-6 border-t border-slate-100">
-                <button onClick={() => setVisiblePatCount(prev => prev + 30)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-2 rounded-xl font-bold transition-colors">
+                <button onClick={() => setVisibleSchCount(prev => prev + 30)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-2 rounded-xl font-bold transition-colors">
                   View More List
                 </button>
               </div>

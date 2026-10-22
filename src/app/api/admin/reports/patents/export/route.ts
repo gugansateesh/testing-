@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   try {
     let query = admin.from('legacy_patents').select('*')
     if (year && year !== 'all') query = query.eq('academic_year', year)
-    if (dept && dept !== 'all') query = query.eq('department', dept)
+    if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
     if (status && status !== 'all') query = query.ilike('status', `%${status}%`)
     if (startDate) query = query.gte('filed_date', startDate)
     if (endDate) query = query.lte('filed_date', endDate)
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
     const ws = workbook.addWorksheet('Patents')
 
     const headers = [
-      'Department', 'Application Number', 'Status', 'Inventors', 'Title', 'Applicants', 'Filed Date', 'Published/Granted Date', 'Publication/Grant Number', 'Assignee', 'Academic Year', 'Proof Link'
+      'S.No', 'Department', 'Application Number', 'Status', 'Inventors', 'Title', 'Applicants', 'Filed Date', 'Published/Granted Date', 'Publication/Grant Number', 'Assignee', 'Academic Year', 'Proof Link'
     ]
     
     const headerRow = ws.addRow(headers)
@@ -58,14 +58,14 @@ export async function GET(request: Request) {
     })
     headerRow.height = 30
 
-    const colWidths = [20, 25, 15, 30, 40, 30, 15, 20, 30, 30, 15, 40]
+    const colWidths = [10, 20, 25, 15, 30, 40, 30, 15, 20, 30, 30, 15, 40]
     colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w })
 
     const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('en-IN') : ''
 
-    ;(result || []).forEach(row => {
+    ;(result || []).forEach((row, idx) => {
       ws.addRow([
-        row.department || '', row.application_number || '', row.status || '', row.inventors || '',
+        idx + 1, row.department || '', row.application_number || '', row.status || '', row.inventors || '',
         row.title || '', row.applicants || '', fmtDate(row.filed_date), fmtDate(row.published_or_granted_date),
         row.publication_or_grant_number || '', row.assignee || '', row.academic_year || '', row.proof_link || ''
       ])

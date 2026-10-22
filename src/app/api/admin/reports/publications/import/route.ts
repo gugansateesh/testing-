@@ -10,16 +10,21 @@ const PUBLICATIONS_COLUMN_MAP = {
   s_no: ['S.No', 'S No', 'S. No.'],
   authors: 'Authors',
   title: 'Title',
-  source_title: 'Source title',
+  source_title: ['Source title', 'Source Title'],
   volume: 'Volume',
   issue: 'Issue',
   year: 'Year',
   doi: 'DOI',
   link: 'Link',
-  document_type_scopus: ['Document Type in Scopus', 'Document Type', 'Doc Type (Scopus)'],
-  document_type_report: ['Document Type as per Report', 'Doc Type (Report)'],
+  duplicates_raw: ['Duplicates', 'Duplicate'],
+  proof_full_paper_url: ['Full Paper Link', 'Full Paper URL'],
+  proof_scopus_url: ['Scopus Proof Link', 'Scopus Proof URL', 'Scopus Link'],
+  proof_published_url: ['Published Proof Link', 'Published Proof URL', 'Published Link'],
+  document_type_scopus: ['Document Type in Scopus', 'Document Type Scopus', 'Document Type', 'Doc Type (Scopus)'],
+  document_type_report: ['Document Type as per Report', 'Document Type Report', 'Doc Type (Report)'],
   department: ['Department', 'Dept'],
   faculty_name: ['Name of the Faculty', 'Faculty Name', 'Faculty'],
+  emp_id: ['Emp ID', 'Employee ID', 'EmpID'],
   publication_date: ['Date', 'Publication Date'],
   publication_month: ['Month', 'Publication Month']
 };
@@ -121,12 +126,21 @@ export async function POST(request: Request) {
       if (row.year) row.year = parseInt(row.year, 10) || null
       if (row.s_no) row.s_no = parseInt(row.s_no, 10) || null
       if (row.department) row.department = row.department.toString().trim().toUpperCase()
+
+      // Convert "Yes"/"No"/"yes"/"no" Duplicates column → boolean is_duplicate
+      let isDuplicateFlag = false
+      if (row.duplicates_raw !== undefined) {
+        isDuplicateFlag = String(row.duplicates_raw).trim().toLowerCase() === 'yes'
+      }
+      // Legacy fallback: DOI ending in '+1' was the old way to flag duplicates
+      if (!isDuplicateFlag && (row.doi || '').trim().endsWith('+1')) {
+        isDuplicateFlag = true
+      }
+      delete row.duplicates_raw // don't insert this helper field to DB
       
       const cleanDoi = (row.doi || '').trim().toLowerCase()
       const cleanLink = (row.link || '').trim().toLowerCase()
       const cleanTitle = (row.title || '').trim().toLowerCase()
-      
-      const isDuplicateFlag = (row.doi || '').trim().endsWith('+1')
       
       if (!cleanDoi) emptyDoiCount++
       if (!cleanLink) emptyLinkCount++

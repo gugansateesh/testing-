@@ -15,6 +15,7 @@ export default function ConsultancyReportPage() {
   const [activeYear, setActiveYear] = useState<string>('all')
   const [departments, setDepartments] = useState<string[]>([])
   const [activeDept, setActiveDept] = useState<string>('all')
+  const [search, setSearch] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [visibleCount, setVisibleCount] = useState(30)
@@ -65,10 +66,11 @@ export default function ConsultancyReportPage() {
         const { data, departments: deptList, years: yearList, totalAmount: apiTotal } = await res.json()
         setConsultancies(data || [])
         setTotalAmount(apiTotal || 0)
-        // Populate filters if this is the initial 'all' fetch
-        if (year === 'all' && dept === 'all') {
-          setYears(yearList || [])
-          setDepartments(deptList || [])
+        if (yearList && yearList.length > 0) {
+          setYears(prev => prev.length > 0 ? prev : yearList)
+        }
+        if (deptList && deptList.length > 0) {
+          setDepartments(prev => prev.length > 0 ? prev : deptList)
         }
       } else {
         console.error('Consultancy fetch failed', res.status)
@@ -198,6 +200,19 @@ export default function ConsultancyReportPage() {
     </div>
   )
 
+  const filteredConsultancies = consultancies.filter(c => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return (
+      (c.project_title || '').toLowerCase().includes(q) ||
+      (c.faculty_name || '').toLowerCase().includes(q) ||
+      (c.funding_agency || '').toLowerCase().includes(q) ||
+      (c.department || '').toLowerCase().includes(q)
+    )
+  })
+
+  const filteredTotal = filteredConsultancies.reduce((sum, c) => sum + (Number(c.amount) || 0), 0)
+
   return (
     <div className="min-h-screen bg-slate-50 p-6 font-sans text-slate-900">
       <div className="w-full mx-auto space-y-6">
@@ -283,6 +298,20 @@ export default function ConsultancyReportPage() {
                   </button>
                 )}
               </div>
+              <div className="flex items-center gap-1.5 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5">
+                <input 
+                  type="text" 
+                  placeholder="Search project, faculty, agency..." 
+                  value={search} 
+                  onChange={e => setSearch(e.target.value)}
+                  className="bg-transparent text-sm focus:outline-none w-44"
+                />
+                {search && (
+                  <button onClick={() => setSearch('')} className="text-slate-400 hover:text-red-500">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                )}
+              </div>
               <select
                 value={activeDept}
                 onChange={e => setActiveDept(e.target.value)}
@@ -294,7 +323,7 @@ export default function ConsultancyReportPage() {
                 ))}
               </select>
               <div className="flex items-center justify-center px-3 py-2 bg-[#0A3D8F]/10 text-[#0A3D8F] text-sm font-bold rounded-lg border border-[#0A3D8F]/20 whitespace-nowrap">
-                {consultancies.length} {consultancies.length === 1 ? 'Result' : 'Results'}
+                {filteredConsultancies.length} {filteredConsultancies.length === 1 ? 'Result' : 'Results'}
               </div>
             </div>
           </div>
@@ -302,9 +331,9 @@ export default function ConsultancyReportPage() {
           {/* Total Amount banner */}
           <div className="bg-gradient-to-r from-[#0A3D8F]/5 to-[#0A3D8F]/10 border-b border-slate-200 px-6 py-3 flex items-center justify-between">
             <span className="text-sm font-semibold text-slate-600">
-              Total Consultancy Amount {activeDept !== 'all' || startDate || endDate || activeYear !== 'all' ? '(filtered)' : ''}
+              Total Consultancy Amount {activeDept !== 'all' || startDate || endDate || activeYear !== 'all' || search ? '(filtered)' : ''}
             </span>
-            <span className="text-xl font-black text-[#0A3D8F]">{formatCurrency(totalAmount)}</span>
+            <span className="text-xl font-black text-[#0A3D8F]">{formatCurrency(filteredTotal)}</span>
           </div>
 
           {/* Table */}
@@ -312,7 +341,7 @@ export default function ConsultancyReportPage() {
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-[#0A3D8F] text-white">
                 <tr>
-                  <th className="px-4 py-3 font-semibold border-r border-blue-800 text-center">#</th>
+                  <th className="px-4 py-3 font-semibold border-r border-blue-800 text-center">S.No</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Academic Year</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Dept</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Date</th>
@@ -324,13 +353,15 @@ export default function ConsultancyReportPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {consultancies.length === 0 ? (
+                {filteredConsultancies.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="px-4 py-8 text-center text-slate-500 font-medium">
-                      No consultancy records found. Upload an Excel file to import data.
+                      {consultancies.length === 0
+                        ? 'No consultancy records found. Upload an Excel file to import data.'
+                        : 'No records match the current filters.'}
                     </td>
                   </tr>
-                ) : consultancies.slice(0, visibleCount).map((c, idx) => (
+                ) : filteredConsultancies.slice(0, visibleCount).map((c, idx) => (
                   <tr key={c.id} className="hover:bg-blue-50 transition-colors">
                     <td className="px-4 py-3 border-r border-slate-100 font-medium text-slate-500 text-center">{idx + 1}</td>
                     <td className="px-4 py-3 border-r border-slate-100 font-bold text-[#0A3D8F] text-center">{c.academic_year || '—'}</td>
@@ -357,7 +388,7 @@ export default function ConsultancyReportPage() {
                 ))}
               </tbody>
             </table>
-            {consultancies.length > visibleCount && (
+            {filteredConsultancies.length > visibleCount && (
               <div className="flex justify-center p-6 border-t border-slate-100">
                 <button
                   onClick={() => setVisibleCount(prev => prev + 30)}

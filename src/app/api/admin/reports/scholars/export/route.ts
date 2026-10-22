@@ -15,10 +15,26 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const year = searchParams.get('year')
+  const dept = searchParams.get('dept')
 
   try {
     let query = admin.from('legacy_research_scholars').select('*')
-    if (year && year !== 'all') query = query.eq('academic_year', year)
+    if (year && year !== 'all') {
+      const yTrim = year.trim()
+      if (/^\d{4}$/.test(yTrim)) {
+        query = query.gte('year_of_registration', `${yTrim}-01-01`).lte('year_of_registration', `${yTrim}-12-31`)
+      } else {
+        query = query.eq('academic_year', yTrim)
+      }
+    }
+    if (dept && dept !== 'all') {
+      const dTrim = dept.trim()
+      if (dTrim.toUpperCase() === 'MECH' || dTrim.toUpperCase() === 'MECHANICAL') {
+        query = query.or('research_centre.ilike.MECH,research_centre.ilike.MECHANICAL')
+      } else {
+        query = query.ilike('research_centre', dTrim)
+      }
+    }
 
     const { data, error } = await query
     if (error) throw error
@@ -32,7 +48,7 @@ export async function GET(request: Request) {
     const ws = workbook.addWorksheet('Scholars')
 
     const headers = [
-      'Academic Year', 'Research Centre', 'Supervisor Name', 'Scholar Name', 'AU Reg. No.', 'Year of Reg.', 'Type'
+      'S.No', 'Academic Year', 'Research Centre', 'Supervisor Name', 'Scholar Name', 'AU Reg. No.', 'Year of Reg.', 'Type'
     ]
     
     const headerRow = ws.addRow(headers)
@@ -48,14 +64,14 @@ export async function GET(request: Request) {
     })
     headerRow.height = 30
 
-    const colWidths = [15, 30, 30, 30, 15, 15, 15]
+    const colWidths = [10, 15, 30, 30, 30, 15, 15, 15]
     colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w })
 
     const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('en-IN') : ''
 
-    ;(result || []).forEach(row => {
+    ;(result || []).forEach((row, idx) => {
       ws.addRow([
-        row.academic_year || '', row.research_centre || '', row.supervisor_name || '', row.scholar_name || '', row.au_registration_number || '', fmtDate(row.year_of_registration) || row.year_of_registration || '', row.scholar_type || ''
+        idx + 1, row.academic_year || '', row.research_centre || '', row.supervisor_name || '', row.scholar_name || '', row.au_registration_number || '', fmtDate(row.year_of_registration) || row.year_of_registration || '', row.scholar_type || ''
       ])
     })
 

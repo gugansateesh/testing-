@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   try {
     let query = admin.from('legacy_consultancy').select('*')
     if (year && year !== 'all') query = query.eq('academic_year', year)
-    if (dept && dept !== 'all') query = query.eq('department', dept)
+    if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
     if (startDate) query = query.gte('project_date', startDate)
     if (endDate) query = query.lte('project_date', endDate)
 

@@ -31,7 +31,7 @@ export async function GET(request: Request) {
         .range(page * pageSize, (page + 1) * pageSize - 1)
 
       if (year && year !== 'all') query = query.eq('academic_year', year)
-      if (dept && dept !== 'all') query = query.eq('dept', dept)
+      if (dept && dept !== 'all') query = query.ilike('dept', dept.trim())
 
       const { data: pageData, error } = await query
       if (error) throw error
@@ -70,7 +70,7 @@ export async function GET(request: Request) {
 
     ;(allData || []).forEach((row, idx) => {
       ws.addRow([
-        row.s_no != null ? row.s_no : idx + 1,
+        idx + 1,
         row.academic_year || '',
         row.dept || '',
         row.project_title || '',

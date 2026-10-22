@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     while (true) {
       let query = admin.from('legacy_incentives').select('*')
       if (year && year !== 'all') query = query.eq('incentive_year', year)
-      if (dept && dept !== 'all') query = query.eq('department', dept)
+      if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
       if (startDate) query = query.gte('amount_credited_date', startDate)
       if (endDate) query = query.lte('amount_credited_date', endDate)
 
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
 
     // Apply dept filter via embedded resource
     if (dept && dept !== 'all') {
-      appQuery = (appQuery as any).eq('submissions.department', dept)
+      appQuery = (appQuery as any).ilike('submissions.department', dept.trim())
     }
 
     const { data: appData, error: appError } = await appQuery
@@ -139,20 +139,68 @@ export async function GET(request: Request) {
     const combined = [...portalRows, ...allData]
 
     // ── 4. Departments and Years dropdown from both sources ───────────────────────────
-    const { data: legacyDepts } = await admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_incentives', p_column_name: 'department' })
-    const { data: legacyYears } = await admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_incentives', p_column_name: 'incentive_year' })
+    const deptMap = new Map<string, string>()
+    const yearSet = new Set<string>()
 
-    const deptSet = new Set<string>((legacyDepts || []).map((d: any) => d.val).filter(Boolean))
-    const yearSet = new Set<string>((legacyYears || []).map((y: any) => y.val).filter(Boolean))
+    const addDept = (raw: string | null | undefined) => {
+      if (!raw) return
+      const trimmed = String(raw).trim()
+      if (!trimmed || trimmed.toUpperCase() === 'SELECT') return
+      const lower = trimmed.toLowerCase()
+      const existing = deptMap.get(lower)
+      if (!existing) {
+        deptMap.set(lower, trimmed)
+      } else if (trimmed === trimmed.toUpperCase() && existing !== existing.toUpperCase()) {
+        deptMap.set(lower, trimmed)
+      }
+    }
 
-    ;(appData || []).forEach((a: any) => {
-      const sub = Array.isArray(a.submissions) ? a.submissions[0] : a.submissions
-      if (sub?.department) deptSet.add(sub.department)
-      if (sub?.year) yearSet.add(String(sub.year))
+    const addYear = (raw: string | number | null | undefined) => {
+      if (!raw) return
+      const trimmed = String(raw).trim()
+      if (trimmed) yearSet.add(trimmed)
+    }
+
+    // Fetch distinct metadata from legacy_incentives
+    const { data: legacyMeta } = await admin
+      .from('legacy_incentives')
+      .select('department, incentive_year')
+      .limit(10000)
+
+    if (legacyMeta && legacyMeta.length > 0) {
+      legacyMeta.forEach((r: any) => {
+        addDept(r.department)
+        addYear(r.incentive_year)
+      })
+    }
+
+    // Also populate from currently fetched legacy data to ensure nothing is missed
+    allData.forEach((r: any) => {
+      addDept(r.department)
+      addYear(r.incentive_year)
     })
 
-    const departments = Array.from(deptSet).sort()
-    const years = Array.from(yearSet).sort().reverse()
+    // Also populate from live portal rows and submissions
+    ;(appData || []).forEach((a: any) => {
+      const sub = Array.isArray(a.submissions) ? a.submissions[0] : a.submissions
+      if (sub?.department) addDept(sub.department)
+      if (sub?.year) addYear(sub.year)
+    })
+
+    const { data: liveSubs } = await admin
+      .from('submissions')
+      .select('department, year')
+      .limit(5000)
+
+    if (liveSubs) {
+      liveSubs.forEach((s: any) => {
+        if (s.department) addDept(s.department)
+        if (s.year) addYear(s.year)
+      })
+    }
+
+    const departments = Array.from(deptMap.values()).sort((a, b) => a.localeCompare(b))
+    const years = Array.from(yearSet).sort((a, b) => b.localeCompare(a))
 
     // ── 5. Sort: newest year first, then by credited date desc ───────────────
     const result = combined.sort((a: any, b: any) => {

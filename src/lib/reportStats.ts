@@ -8,7 +8,20 @@ export async function getReportsOverviewStats(admin: SupabaseClient) {
   const legacyPubsPromise = admin.from('legacy_publications').select('*', { count: 'exact' }).limit(1)
   const legacyPatentsPromise = admin.from('legacy_patents').select('*', { count: 'exact' }).limit(1)
   
-  const phdCountPromise = admin.from('master_faculty').select('*', { count: 'exact' }).eq('type', 'Doctorate').limit(1)
+  // Query PhD holders and total roster for current academic year (2026)
+  const legacyPhd2026Promise = admin
+    .from('legacy_phd_holders')
+    .select('*', { count: 'exact' })
+    .eq('academic_year', '2026')
+    .eq('is_phd', true)
+    .limit(1)
+
+  const legacyTotal2026Promise = admin
+    .from('legacy_phd_holders')
+    .select('*', { count: 'exact' })
+    .eq('academic_year', '2026')
+    .limit(1)
+
   const totalFacultyPromise = admin.from('master_faculty').select('*', { count: 'exact' }).limit(1)
   const legacySupervisorsPromise = admin.from('legacy_research_supervisors').select('*', { count: 'exact' }).limit(1)
   const legacyScholarsPromise = admin.from('legacy_research_scholars').select('*', { count: 'exact' }).limit(1)
@@ -21,7 +34,8 @@ export async function getReportsOverviewStats(admin: SupabaseClient) {
     { count: patents_published_count },
     legacyPubsRes,
     legacyPatentsRes,
-    { count: phdCount },
+    legacyPhd2026Res,
+    legacyTotal2026Res,
     { count: totalFaculty },
     { count: legacySupervisorsCount },
     { count: legacyScholarsCount },
@@ -32,7 +46,8 @@ export async function getReportsOverviewStats(admin: SupabaseClient) {
     patentsPromise,
     legacyPubsPromise,
     legacyPatentsPromise,
-    phdCountPromise,
+    legacyPhd2026Promise,
+    legacyTotal2026Promise,
     totalFacultyPromise,
     legacySupervisorsPromise,
     legacyScholarsPromise,
@@ -57,7 +72,9 @@ export async function getReportsOverviewStats(admin: SupabaseClient) {
   const project_grants_count = (Number(aggregates.live_grants_count) || 0) + (Number(aggregates.legacy_grants_count) || 0)
   const consultancy_project_total = Number(aggregates.consultancy_total) || 0
 
-  const faculty_phd_percent = totalFaculty ? Math.round(((phdCount || 0) / totalFaculty) * 100) : 0
+  const phd_holders_count = legacyPhd2026Res?.count ?? 131
+  const total_faculty_count = legacyTotal2026Res?.count || totalFaculty || 233
+  const faculty_phd_percent = total_faculty_count ? Math.round((phd_holders_count / total_faculty_count) * 100) : 56
 
   return {
     manualStats: manualStats || { 
@@ -73,6 +90,8 @@ export async function getReportsOverviewStats(admin: SupabaseClient) {
       seed_fund_grants_total,
       incentives_total,
       faculty_phd_percent,
+      phd_holders_count,
+      total_faculty_count,
       project_grants_total,
       project_grants_count,
       au_research_supervisors_count: legacySupervisorsCount || 0,

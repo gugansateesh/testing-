@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     // 1. Fetch legacy grants
     let legacyQuery = admin.from('research_grants').select('*')
     if (year && year !== 'all') legacyQuery = legacyQuery.eq('academic_year', year)
-    if (dept && dept !== 'all') legacyQuery = legacyQuery.eq('department', dept)
+    if (dept && dept !== 'all') legacyQuery = legacyQuery.ilike('department', dept.trim())
     
     const { data: legacyData, error: legacyError } = await legacyQuery
     if (legacyError) throw legacyError
@@ -88,7 +88,7 @@ export async function GET(request: Request) {
       filteredLive = filteredLive.filter(r => r.academic_year === year)
     }
     if (dept && dept !== 'all') {
-      filteredLive = filteredLive.filter(r => r.department === dept)
+      filteredLive = filteredLive.filter(r => (r.department || '').trim().toLowerCase() === dept.trim().toLowerCase())
     }
 
     const combined = [...(legacyData || []), ...filteredLive]
