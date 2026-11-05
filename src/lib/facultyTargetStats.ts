@@ -389,14 +389,39 @@ export async function getFacultyTargetsWithAchievement(
   const allEntries = [...targetMap.values()]
   const allNames = allEntries.map(e => e.name)
 
-  // 4a. Patents (Utility & Design) — split by patent_type, match by inventors field
+  // 4a. Patents (Utility & Design) — split by patent_type, match by emp_id / faculty_name or inventors field
   const { data: patentRows } = await admin
     .from('legacy_patents')
-    .select('inventors, patent_type')
+    .select('inventors, patent_type, emp_id, faculty_name')
     .eq('academic_year', legacyAcYear)
 
   if (patentRows) {
     for (const pat of patentRows) {
+      const pType = (pat.patent_type || 'Utility') as string
+
+      // 1. Match by emp_id if present
+      if (pat.emp_id && targetMap.has(pat.emp_id)) {
+        const entry = targetMap.get(pat.emp_id)!
+        if (pType === 'Utility') entry.achievement.utility_patent_achieved++
+        else if (pType === 'Design') entry.achievement.design_patent_achieved++
+        else if (pType === 'Copyright') entry.achievement.copyright_achieved++
+        continue
+      }
+
+      // 2. Match by faculty_name if present
+      if (pat.faculty_name) {
+        const normFac = normalizeName(pat.faculty_name)
+        const entry = targetMap.get([...nameToEmpId.entries()].find(([k]) => k === normFac)?.[1] ?? '') ??
+          allEntries.find(e => normalizeName(e.name) === normFac)
+        if (entry) {
+          if (pType === 'Utility') entry.achievement.utility_patent_achieved++
+          else if (pType === 'Design') entry.achievement.design_patent_achieved++
+          else if (pType === 'Copyright') entry.achievement.copyright_achieved++
+          continue
+        }
+      }
+
+      // 3. Fallback: match by inventors field lines
       if (!pat.inventors) continue
       const inventorLines = pat.inventors.split('\n').map((s: string) => normalizeName(s))
       for (const entry of allEntries) {
@@ -405,7 +430,6 @@ export async function getFacultyTargetsWithAchievement(
         const matched = inventorLines.some((inv: string) => inv === norm ||
           inv.replace(/^(dr\.|mr\.|ms\.|prof\.)\s*/i, '') === norm.replace(/^(dr\.|mr\.|ms\.|prof\.)\s*/i, ''))
         if (!matched) continue
-        const pType = (pat.patent_type || 'Utility') as string
         if (pType === 'Utility') entry.achievement.utility_patent_achieved++
         else if (pType === 'Design') entry.achievement.design_patent_achieved++
         else if (pType === 'Copyright') entry.achievement.copyright_achieved++

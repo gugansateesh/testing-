@@ -20,8 +20,8 @@ const PATENTS_COLUMN_MAP = {
   assignee: ['Assignee/s Name (Institute Affiliation/s at time of Application)', 'Assignee', 'assignee'],
   proof_link: ['Proof Link', 'Proof', 'proof'],
   academic_year: ['Calender Year', 'Calendar Year', 'Academic Year', 'Year', 'academic year'],
-  faculty_name: ['Name of the Faculty', 'Faculty Name', 'Name of Faculty', 'Faculty', 'name_of_faculty'],
-  emp_id: ['Employee ID', 'Employee Id', 'Emp ID', 'EmpID', 'empid']
+  faculty_name: ['Name of the Faculty', 'Faculty Name', 'Name of Faculty', 'Faculty', 'name_of_faculty', 'faculty_name'],
+  emp_id: ['Employee ID', 'Employee Id', 'Emp ID', 'EmpID', 'empid', 'emp_id', 'Staff ID', 'Staff Id']
 };
 
 export async function POST(request: Request) {
@@ -120,10 +120,10 @@ export async function POST(request: Request) {
     if (mode !== 'replace' && appNosInFile.length > 0) {
       const { data: existing } = await admin
         .from('legacy_patents')
-        .select('application_number, emp_id')
+        .select('application_number, emp_id, faculty_name')
         .in('application_number', appNosInFile)
       if (existing) {
-        existingAppNos = new Set(existing.map(e => `${(e.application_number || '').trim()}:::${(e.emp_id || '').trim()}`))
+        existingAppNos = new Set(existing.map(e => `${(e.application_number || '').trim()}:::${(e.emp_id || '').trim()}:::${(e.faculty_name || '').trim().toLowerCase()}`))
       }
     }
 
@@ -133,7 +133,7 @@ export async function POST(request: Request) {
 
     for (const row of allRows) {
       if (row.application_number) {
-        const appKey = `${(row.application_number || '').trim()}:::${(row.emp_id || '').trim()}`
+        const appKey = `${(row.application_number || '').trim()}:::${(row.emp_id || '').trim()}:::${(row.faculty_name || '').trim().toLowerCase()}`
         if (existingAppNos.has(appKey) || fileAppNos.has(appKey)) {
           deduppedCount++
           continue
