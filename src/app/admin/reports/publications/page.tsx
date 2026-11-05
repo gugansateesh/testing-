@@ -154,7 +154,8 @@ export default function PublicationsReportPage() {
 
       const result = await res.json()
       if (res.ok) {
-        alert(`Import successful! ${importMode === 'replace' ? `Deleted ${result.deleted || 0} old records. ` : ''}Imported ${result.imported} new records. Skipped ${result.skipped} duplicates/invalid rows.`)
+        const dupMsg = result.duplicates ? ` (${result.duplicates} marked as duplicates)` : ''
+        alert(`Import successful! ${importMode === 'replace' ? `Deleted ${result.deleted || 0} old records. ` : ''}Imported ${result.imported} records${dupMsg}. Skipped ${result.skipped || 0} empty/invalid rows.`)
         // Refresh table
         await fetchPublications(activePubYear, activeDept, activeMonth, activeDuplicate, startDate, endDate, token)
       } else {

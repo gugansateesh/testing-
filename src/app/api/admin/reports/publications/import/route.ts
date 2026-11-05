@@ -76,49 +76,30 @@ export async function POST(request: Request) {
     const { data: existing, error: dedupError } = mode === 'append' 
       ? await admin
           .from('legacy_publications')
-          .select('doi, link, title')
+          .select('doi, link, title, faculty_name')
       : { data: [], error: null }
       
     if (dedupError) throw dedupError;
     
-    let existingDois = new Set<string>()
-    let existingLinks = new Set<string>()
-    let existingLinksNoDoi = new Set<string>()
-    let existingTitles = new Set<string>()
-    let existingTitlesNoLink = new Set<string>()
-    let existingTitlesNoDoiNoLink = new Set<string>()
-
-    const addToSets = (d: string, l: string, t: string) => {
-      if (d) existingDois.add(d)
-      if (l) {
-        existingLinks.add(l)
-        if (!d) existingLinksNoDoi.add(l)
-      }
-      if (t) {
-        existingTitles.add(t)
-        if (!l) existingTitlesNoLink.add(t)
-        if (!d && !l) existingTitlesNoDoiNoLink.add(t)
-      }
-    }
-    
-    if (existing) {
+    // In append mode, track exact existing records (same DOI/Title + faculty) to avoid re-inserting
+    const existingExactSet = new Set<string>()
+    if (mode === 'append' && existing) {
       existing.forEach(e => {
         const d = (e.doi || '').trim().toLowerCase()
-        const l = (e.link || '').trim().toLowerCase()
         const t = (e.title || '').trim().toLowerCase()
-        addToSets(d, l, t)
+        const f = (e.faculty_name || '').trim().toLowerCase()
+        if (d && f) existingExactSet.add(`${d}:::${f}`)
+        if (t && f) existingExactSet.add(`${t}:::${f}`)
       })
     }
 
+    const seenDois = new Set<string>()
+    const seenTitles = new Set<string>()
+
     const newRows = []
-    
-    let emptyDoiCount = 0
-    let emptyLinkCount = 0
-    let emptyTitleCount = 0
-    
-    let doiMatchDrops = 0
-    let linkMatchDrops = 0
-    let titleMatchDrops = 0
+    let duplicateCount = 0
+    let skippedEmpty = 0
+    let skippedExact = 0
 
     console.log(`[Import Publications] Total rows parsed from file: ${rows.length}`)
 
@@ -129,73 +110,76 @@ export async function POST(request: Request) {
 
       // Convert "Yes"/"No"/"yes"/"no" Duplicates column → boolean is_duplicate
       let isDuplicateFlag = false
-      if (row.duplicates_raw !== undefined) {
-        isDuplicateFlag = String(row.duplicates_raw).trim().toLowerCase() === 'yes'
+      if (row.duplicates_raw !== undefined && row.duplicates_raw !== null) {
+        const rawStr = String(row.duplicates_raw).trim().toLowerCase()
+        isDuplicateFlag = rawStr === 'yes' || rawStr === 'true' || rawStr === '1'
       }
-      // Legacy fallback: DOI ending in '+1' was the old way to flag duplicates
-      if (!isDuplicateFlag && (row.doi || '').trim().endsWith('+1')) {
+
+      // Check legacy +1 marker on DOI
+      const rawDoi = (row.doi || '').trim()
+      if (rawDoi.endsWith('+1')) {
         isDuplicateFlag = true
+        row.doi = rawDoi.slice(0, -2).trim()
       }
+
       delete row.duplicates_raw // don't insert this helper field to DB
       
       const cleanDoi = (row.doi || '').trim().toLowerCase()
-      const cleanLink = (row.link || '').trim().toLowerCase()
       const cleanTitle = (row.title || '').trim().toLowerCase()
-      
-      if (!cleanDoi) emptyDoiCount++
-      if (!cleanLink) emptyLinkCount++
-      if (!cleanTitle) emptyTitleCount++
-      
-      let isDuplicate = false
+      const cleanFaculty = (row.faculty_name || '').trim().toLowerCase()
 
-      if (cleanDoi) {
-        if (existingDois.has(cleanDoi)) {
-          doiMatchDrops++
-          isDuplicate = true
-        } else if (cleanLink && existingLinksNoDoi.has(cleanLink)) {
-          linkMatchDrops++
-          isDuplicate = true
-        } else if (cleanTitle && existingTitlesNoDoiNoLink.has(cleanTitle)) {
-          titleMatchDrops++
-          isDuplicate = true
-        }
-      } else if (cleanLink) {
-        if (existingLinks.has(cleanLink)) {
-          linkMatchDrops++
-          isDuplicate = true
-        } else if (cleanTitle && existingTitlesNoLink.has(cleanTitle)) {
-          titleMatchDrops++
-          isDuplicate = true
-        }
-      } else if (cleanTitle) {
-        if (existingTitles.has(cleanTitle)) {
-          titleMatchDrops++
-          isDuplicate = true
+      // Skip completely empty rows
+      if (!cleanTitle && !cleanDoi && !cleanFaculty && !row.authors) {
+        skippedEmpty++
+        continue
+      }
+
+      // In append mode, skip if the exact record (same DOI/Title AND same faculty) already exists in DB
+      if (mode === 'append') {
+        const doiKey = cleanDoi && cleanFaculty ? `${cleanDoi}:::${cleanFaculty}` : ''
+        const titleKey = cleanTitle && cleanFaculty ? `${cleanTitle}:::${cleanFaculty}` : ''
+        if ((doiKey && existingExactSet.has(doiKey)) || (titleKey && existingExactSet.has(titleKey))) {
+          skippedExact++
+          continue
         }
       }
 
-      if (isDuplicate) continue
-      
-      addToSets(cleanDoi, cleanLink, cleanTitle)
+      // If not already flagged by the spreadsheet, check if this DOI or Title was seen earlier in the file
+      if (!isDuplicateFlag) {
+        if (cleanDoi && seenDois.has(cleanDoi)) {
+          isDuplicateFlag = true
+        } else if (cleanTitle && seenTitles.has(cleanTitle)) {
+          isDuplicateFlag = true
+        }
+      }
+
+      if (cleanDoi) seenDois.add(cleanDoi)
+      if (cleanTitle) seenTitles.add(cleanTitle)
+
+      if (isDuplicateFlag) {
+        duplicateCount++
+      }
+
       newRows.push({ ...row, is_duplicate: isDuplicateFlag })
     }
 
-    console.log(`[Import Publications] Empty values at parse time: DOI=${emptyDoiCount}, Link=${emptyLinkCount}, Title=${emptyTitleCount}`)
-    console.log(`[Import Publications] Dropped due to DOI match: ${doiMatchDrops}`)
-    console.log(`[Import Publications] Dropped due to Link match: ${linkMatchDrops}`)
-    console.log(`[Import Publications] Dropped due to Title match: ${titleMatchDrops}`)
-    console.log(`[Import Publications] Genuine new rows to insert: ${newRows.length}`)
+    console.log(`[Import Publications] Valid rows to insert: ${newRows.length} (duplicates marked: ${duplicateCount})`)
+    console.log(`[Import Publications] Skipped: empty=${skippedEmpty}, exact_matches=${skippedExact}`)
 
-    if (newRows.length > 0) {
-      const { error } = await admin.from('legacy_publications').insert(newRows)
-      if (error) throw error
+    // Batch insert in chunks of 500
+    const BATCH_SIZE = 500
+    for (let i = 0; i < newRows.length; i += BATCH_SIZE) {
+      const batch = newRows.slice(i, i + BATCH_SIZE)
+      const { error: insertError } = await admin.from('legacy_publications').insert(batch)
+      if (insertError) throw insertError
     }
 
     return NextResponse.json({ 
       mode,
       deleted: deletedCount,
       imported: newRows.length, 
-      skipped: skipped + doiMatchDrops + linkMatchDrops + titleMatchDrops,
+      duplicates: duplicateCount,
+      skipped: skipped + skippedEmpty + skippedExact,
       errors: [] 
     })
 
