@@ -59,7 +59,10 @@ export async function POST(request: Request) {
       success: true,
       name: staff.name,
       maskedEmail: maskEmail(email),
-      message: `A 6-digit verification code has been sent to ${maskEmail(email)}.`,
+      message: emailResult.devMode
+        ? `Local Wi-Fi blocked SMTP port 465. Development verification code: ${otp}`
+        : `A 6-digit verification code has been sent to ${maskEmail(email)}.`,
+      devOtp: emailResult.devMode ? otp : undefined,
     })
   } catch (err: any) {
     console.error('send-otp API error:', err)

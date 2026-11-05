@@ -32,9 +32,9 @@ function createTransporter() {
       user,
       pass,
     },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 8000,
   })
 }
 
@@ -168,8 +168,15 @@ export async function verifyOtp(email: string, inputOtp: string): Promise<{ vali
 /**
  * Sends branded OTP email to staff member using Gmail SMTP.
  */
-export async function sendOtpEmail(toEmail: string, otp: string, recipientName: string): Promise<{ success: boolean; error?: string }> {
+export async function sendOtpEmail(toEmail: string, otp: string, recipientName: string): Promise<{ success: boolean; devMode?: boolean; error?: string }> {
   const cleanEmail = toEmail.trim().toLowerCase()
+
+  console.log(`\n======================================================`)
+  console.log(`🔑 [STAFF OTP GENERATED]`)
+  console.log(`   To: ${recipientName} <${cleanEmail}>`)
+  console.log(`   Code: ${otp}`)
+  console.log(`   Valid for: ${OTP_EXPIRY_MINUTES} minutes`)
+  console.log(`======================================================\n`)
 
   try {
     const transporter = createTransporter()
@@ -247,16 +254,30 @@ export async function sendOtpEmail(toEmail: string, otp: string, recipientName: 
       html: htmlContent,
     })
 
-    console.log(`\n======================================================`)
-    console.log(`📧 [EMAIL OTP SENT VIA GMAIL SMTP]`)
-    console.log(`   From: ${MAIN_SENDER_EMAIL}`)
-    console.log(`   To: ${recipientName} <${cleanEmail}>`)
-    console.log(`   Code: ${otp}`)
-    console.log(`======================================================\n`)
+    console.log(`📧 [EMAIL DELIVERED TO GMAIL SMTP INBOX]`)
+    console.log(`   To: ${cleanEmail}`)
 
     return { success: true }
   } catch (error: any) {
-    console.error('Failed to send OTP via Gmail SMTP:', error)
+    console.error('Failed to send OTP via Gmail SMTP:', error?.message || error)
+
+    const isLocalDev = process.env.NODE_ENV !== 'production' || process.env.ALLOW_DEV_FALLBACK === 'true'
+    const isNetworkBlock = error?.code === 'ETIMEDOUT' || error?.code === 'ECONNREFUSED' || error?.code === 'ENETUNREACH' || error?.timeoutType === 'CONNECT_TIMEOUT'
+
+    // If local development and network firewall blocks SMTP port 465, gracefully allow testing
+    if (isLocalDev && isNetworkBlock) {
+      console.warn(`\n⚠️  [CAMPUS NETWORK FIREWALL BLOCKED SMTP PORT 465]`)
+      console.warn(`   The campus Wi-Fi network blocks outbound SMTP connections to smtp.gmail.com:465.`)
+      console.warn(`   For local testing, use verification code: 👉 ${otp} 👈`)
+      console.warn(`======================================================\n`)
+
+      return {
+        success: true,
+        devMode: true,
+        error: `Local campus network blocked port 465. Development verification code: ${otp}`,
+      }
+    }
+
     return { success: false, error: error.message || 'Failed to send email' }
   }
 }

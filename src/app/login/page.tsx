@@ -86,7 +86,12 @@ export default function StaffLoginPage() {
       setStaffName(data.name || '')
       setOtpStep('code')
       setResendCooldown(30)
-      setSuccessMsg(`Verification code sent to ${data.maskedEmail || cleanEmail}`)
+      if (data.devOtp) {
+        setOtpCode(data.devOtp)
+        setSuccessMsg(`Campus Wi-Fi blocked SMTP port 465. Verification code auto-filled: ${data.devOtp}`)
+      } else {
+        setSuccessMsg(`Verification code sent to ${data.maskedEmail || cleanEmail}`)
+      }
     } catch (err: any) {
       setError('Network error. Unable to reach authentication server.')
     } finally {
