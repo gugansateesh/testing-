@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Download, ExternalLink, Upload, Loader2, FileText, Search, CheckCircle, Trash2, Pencil, X } from 'lucide-react'
 import { useAdminAuth } from '@/context/AdminAuthContext'
+import { supabase } from '@/lib/supabase'
 
 export default function PublicationsReportPage() {
   const router = useRouter()
@@ -30,6 +31,13 @@ export default function PublicationsReportPage() {
 
   const fetchPublications = useCallback(async (year: string, dept: string, month: string, duplicate: string, sDate: string, eDate: string, tok: string) => {
     try {
+      // Always refresh the session token before fetching to avoid 401 on stale tokens
+      let freshTok = tok
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) freshTok = session.access_token
+      } catch {}
+
       setPublications([])
       setVisiblePubCount(30)
       const yearQuery = year === 'all' ? '' : year
@@ -38,7 +46,7 @@ export default function PublicationsReportPage() {
       const dupQuery = duplicate === 'all' ? '' : duplicate
       const sDateQuery = sDate ? `&startDate=${sDate}` : ''
       const eDateQuery = eDate ? `&endDate=${eDate}` : ''
-      const res = await fetch(`/api/admin/reports/publications?year=${yearQuery}&dept=${deptQuery}&month=${monthQuery}&duplicate=${dupQuery}${sDateQuery}${eDateQuery}&_t=${Date.now()}`, { headers: { Authorization: `Bearer ${tok}` } })
+      const res = await fetch(`/api/admin/reports/publications?year=${yearQuery}&dept=${deptQuery}&month=${monthQuery}&duplicate=${dupQuery}${sDateQuery}${eDateQuery}&_t=${Date.now()}`, { headers: { Authorization: `Bearer ${freshTok}` } })
       if (res.ok) {
         const { data, departments: deptList, years: yearList, months: monthList } = await res.json()
         setPublications(data || [])
@@ -235,6 +243,12 @@ export default function PublicationsReportPage() {
       if (res.ok) {
         setPublications(prev => prev.map(p => p.id === editPub.id ? { ...p, ...editPub } : p))
         setEditPub(null)
+        // Refresh the list from server to reflect saved changes
+        const { data: { session: freshSession } } = await supabase.auth.getSession()
+        const freshTok = freshSession?.access_token || token
+        if (freshTok) {
+          await fetchPublications(activePubYear, activeDept, activeMonth, activeDuplicate, startDate, endDate, freshTok)
+        }
       } else {
         const err = await res.json()
         alert(err.error || 'Failed to save')
