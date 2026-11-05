@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Download, ExternalLink, X, Upload, Loader2, Info, Trash2, Pencil } from 'lucide-react'
 import { useAdminAuth } from '@/context/AdminAuthContext'
+import { supabase } from '@/lib/supabase'
 
 export default function PatentsReportPage() {
   const router = useRouter()
@@ -76,7 +77,9 @@ export default function PatentsReportPage() {
           publication_or_grant_number: editPatent.publication_or_grant_number,
           academic_year: editPatent.academic_year,
           institute_faculty: editPatent.institute_faculty,
-          name_of_faculty: editPatent.name_of_faculty,
+          name_of_faculty: editPatent.name_of_faculty || editPatent.faculty_name,
+          faculty_name: editPatent.faculty_name || editPatent.name_of_faculty,
+          emp_id: editPatent.emp_id,
           type: editPatent.type,
           proof_link: editPatent.proof_link,
           patent_type: editPatent.patent_type,
@@ -178,7 +181,11 @@ export default function PatentsReportPage() {
       const q = appNumberSearch.toLowerCase()
       if (!p.application_number?.toLowerCase().includes(q) &&
           !p.title?.toLowerCase().includes(q) &&
-          !p.inventors?.toLowerCase().includes(q)) {
+          !p.inventors?.toLowerCase().includes(q) &&
+          !p.faculty_name?.toLowerCase().includes(q) &&
+          !p.name_of_faculty?.toLowerCase().includes(q) &&
+          !p.emp_id?.toLowerCase().includes(q) &&
+          !p.department?.toLowerCase().includes(q)) {
         return false
       }
     }
@@ -187,6 +194,12 @@ export default function PatentsReportPage() {
 
   const fetchPatents = useCallback(async (year: string, dept: string, status: string, sDate: string, eDate: string, tok: string) => {
     try {
+      let freshTok = tok
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) freshTok = session.access_token
+      } catch {}
+
       setPatents([])
       setVisiblePatCount(30)
       const yearQuery = year === 'all' ? '' : year
@@ -194,7 +207,7 @@ export default function PatentsReportPage() {
       const statusQuery = status === 'all' ? '' : encodeURIComponent(status)
       const sDateQuery = sDate ? `&startDate=${sDate}` : ''
       const eDateQuery = eDate ? `&endDate=${eDate}` : ''
-      const res = await fetch(`/api/admin/reports/patents?year=${yearQuery}&dept=${deptQuery}&status=${statusQuery}${sDateQuery}${eDateQuery}&_t=${Date.now()}`, { headers: { Authorization: `Bearer ${tok}` } })
+      const res = await fetch(`/api/admin/reports/patents?year=${yearQuery}&dept=${deptQuery}&status=${statusQuery}${sDateQuery}${eDateQuery}&_t=${Date.now()}`, { headers: { Authorization: `Bearer ${freshTok}` } })
       if (res.ok) {
         const { data, departments: deptList, years: yearList } = await res.json()
         setPatents(data || [])
@@ -455,10 +468,10 @@ export default function PatentsReportPage() {
               <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-1">
                 <input 
                   type="text" 
-                  placeholder="Search app no, title, inventor..."
+                  placeholder="Search app no, title, inventor, faculty, emp id..."
                   value={appNumberSearch} 
                   onChange={e => setAppNumberSearch(e.target.value)} 
-                  className="bg-transparent text-slate-700 text-sm font-semibold focus:outline-none w-52" 
+                  className="bg-transparent text-slate-700 text-sm font-semibold focus:outline-none w-64" 
                 />
                 {appNumberSearch && (
                   <button onClick={() => setAppNumberSearch('')} className="ml-1 text-slate-400 hover:text-red-500">
@@ -477,6 +490,8 @@ export default function PatentsReportPage() {
                 <tr>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">S.No</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Dept</th>
+                  <th className="px-4 py-3 font-semibold border-r border-blue-800">Faculty Name</th>
+                  <th className="px-4 py-3 font-semibold border-r border-blue-800">Emp ID</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">App No.</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Type</th>
                   <th className="px-4 py-3 font-semibold border-r border-blue-800">Status</th>
@@ -492,11 +507,17 @@ export default function PatentsReportPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredPatents.length === 0 ? (
-                  <tr><td colSpan={13} className="px-4 py-8 text-center text-slate-500 font-medium">No patents found.</td></tr>
+                  <tr><td colSpan={15} className="px-4 py-8 text-center text-slate-500 font-medium">No patents found.</td></tr>
                 ) : filteredPatents.slice(0, visiblePatCount).map((p, idx) => (
                     <tr key={p.id} className="hover:bg-blue-50 transition-colors">
                       <td className="px-4 py-3 border-r border-slate-100 font-medium text-slate-500 text-center">{idx + 1}</td>
                       <td className="px-4 py-3 border-r border-slate-100 font-bold text-slate-700">{p.department}</td>
+                      <td className="px-4 py-3 border-r border-slate-100 font-bold text-slate-800 whitespace-normal min-w-[150px]">
+                        {p.faculty_name || p.name_of_faculty || '—'}
+                      </td>
+                      <td className="px-4 py-3 border-r border-slate-100 text-slate-500 font-mono text-xs font-semibold">
+                        {p.emp_id || '—'}
+                      </td>
                       <td className="px-4 py-3 border-r border-slate-100 text-slate-600">
                         <div>{p.application_number}</div>
                         <div className="mt-1 flex items-center gap-2 flex-wrap">
@@ -681,12 +702,16 @@ export default function PatentsReportPage() {
                         <span className="text-sm font-medium text-slate-800 mt-1">{viewPatent.assignee || '—'}</span>
                       </div>
                       <div className="flex flex-col border-b border-slate-50 pb-2">
-                        <span className="text-xs font-bold text-slate-400 uppercase">Faculty / Institute</span>
-                        <span className="text-sm font-medium text-slate-800 mt-1">{viewPatent.institute_faculty || '—'}</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase">Faculty Name</span>
+                        <span className="text-sm font-bold text-slate-800 mt-1">{viewPatent.faculty_name || viewPatent.name_of_faculty || '—'}</span>
                       </div>
                       <div className="flex flex-col border-b border-slate-50 pb-2">
-                        <span className="text-xs font-bold text-slate-400 uppercase">Type & Name of Faculty</span>
-                        <span className="text-sm font-medium text-slate-800 mt-1">{viewPatent.type ? `${viewPatent.type} - ` : ''}{viewPatent.name_of_faculty || '—'}</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase">Employee ID</span>
+                        <span className="text-sm font-mono font-bold text-slate-800 mt-1">{viewPatent.emp_id || '—'}</span>
+                      </div>
+                      <div className="flex flex-col border-b border-slate-50 pb-2">
+                        <span className="text-xs font-bold text-slate-400 uppercase">Faculty / Institute</span>
+                        <span className="text-sm font-medium text-slate-800 mt-1">{viewPatent.institute_faculty || '—'}</span>
                       </div>
                     </div>
                   </div>
@@ -729,7 +754,8 @@ export default function PatentsReportPage() {
                   { label: 'Filed Date', key: 'filed_date', type: 'date' },
                   { label: 'Pub/Grant Date', key: 'published_or_granted_date', type: 'date' },
                   { label: 'Faculty / Institute', key: 'institute_faculty', type: 'text' },
-                  { label: 'Name of Faculty', key: 'name_of_faculty', type: 'text' },
+                  { label: 'Name of Faculty', key: 'faculty_name', type: 'text' },
+                  { label: 'Employee ID', key: 'emp_id', type: 'text' },
                   { label: 'Proof Link', key: 'proof_link', type: 'text' },
                 ] as { label: string; key: string; type: string }[]).map(({ label, key, type }) => (
                   <div key={key}>

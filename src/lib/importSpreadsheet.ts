@@ -147,6 +147,16 @@ export async function parseSpreadsheetRows(buffer: Buffer, expectedColumns: Reco
         const pd = String(parsedDate.getDate()).padStart(2, '0');
         return `${py}-${pm}-${pd}`;
       }
+
+      // Try parsing date string like '14-Nov-2025', '14 Nov 2025', '2025-11-14'
+      const parsedNative = new Date(strVal);
+      if (!isNaN(parsedNative.getTime())) {
+        const py = parsedNative.getFullYear();
+        const pm = String(parsedNative.getMonth() + 1).padStart(2, '0');
+        const pd = String(parsedNative.getDate()).padStart(2, '0');
+        return `${py}-${pm}-${pd}`;
+      }
+
       return null;
     }
 

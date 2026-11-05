@@ -52,7 +52,7 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
       'title', 'inventors', 'applicants', 'assignee', 'department',
       'application_number', 'status', 'filed_date', 'published_or_granted_date',
       'publication_or_grant_number', 'academic_year', 'institute_faculty',
-      'name_of_faculty', 'type', 'proof_link', 'patent_type', 'jurisdiction'
+      'name_of_faculty', 'faculty_name', 'emp_id', 'type', 'proof_link', 'patent_type', 'jurisdiction'
     ]
     const updates: Record<string, any> = {}
     for (const key of allowed) {

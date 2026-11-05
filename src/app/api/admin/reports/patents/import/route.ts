@@ -8,18 +8,20 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 const PATENTS_COLUMN_MAP = {
-  department: 'dep',
-  application_number: 'application',
-  status: 'status of patent',
-  inventors: 'inventor',
-  title: 'title',
-  applicants: 'applicant',
-  filed_date: 'patent filed date',
-  published_or_granted_date: 'published date',
-  publication_or_grant_number: 'publication number',
-  assignee: 'assignee',
-  proof_link: 'proof',
-  academic_year: 'academic year'
+  department: ['Department', 'Dept', 'dep'],
+  application_number: ['Patent Application Number', 'Application Number', 'application'],
+  status: ['Status of Patent (Published / Granted/Filed)', 'Status of Patent', 'status of patent', 'status'],
+  inventors: ['Inventor/s Name', "Inventor's Name", 'Inventors', 'inventor'],
+  title: ['Title of the Patent', 'Patent Title', 'Title', 'title'],
+  applicants: ['Applicant/s Name', "Applicant's Name", 'Applicants', 'applicant'],
+  filed_date: ['Patent Filed Date (DD/MM/YYYY)', 'Patent Filed Date', 'Filed Date', 'patent filed date'],
+  published_or_granted_date: ['Published Date / Granted Date (DD/MM/YYYY)', 'Published Date / Granted Date', 'Published Date', 'published date', 'Grant Date'],
+  publication_or_grant_number: ['Patent Publication Number / Granted Number', 'Publication Number', 'publication number', 'Grant Number'],
+  assignee: ['Assignee/s Name (Institute Affiliation/s at time of Application)', 'Assignee', 'assignee'],
+  proof_link: ['Proof Link', 'Proof', 'proof'],
+  academic_year: ['Calender Year', 'Calendar Year', 'Academic Year', 'Year', 'academic year'],
+  faculty_name: ['Name of the Faculty', 'Faculty Name', 'Name of Faculty', 'Faculty', 'name_of_faculty'],
+  emp_id: ['Employee ID', 'Employee Id', 'Emp ID', 'EmpID', 'empid']
 };
 
 export async function POST(request: Request) {
@@ -56,33 +58,38 @@ export async function POST(request: Request) {
 
     console.log(`[Patent Import] Starting import. Mode: ${mode}, File: ${file.name}, Size: ${file.size}`)
 
+    const hasYearNamedSheets = workbook.worksheets.some(s => /^\d{4}/.test(s.name.trim()))
+
     for (const sheet of workbook.worksheets) {
-      if (!/^\d{4}/.test(sheet.name)) {
-        console.log(`[Patent Import] Skipping sheet: ${sheet.name} (does not match year pattern)`)
-        sheetStats.push({ name: sheet.name, skipped: true, error: null })
+      const sheetName = sheet.name.trim()
+      if (hasYearNamedSheets && !/^\d{4}/.test(sheetName)) {
+        console.log(`[Patent Import] Skipping sheet: ${sheetName} (does not match year pattern in multi-year workbook)`)
+        sheetStats.push({ name: sheetName, skipped: true, error: null })
         continue
       }
       
-      console.log(`[Patent Import] Parsing sheet: ${sheet.name}...`)
+      console.log(`[Patent Import] Parsing sheet: ${sheetName}...`)
       try {
         const { rows, skipped } = await parseSpreadsheetRows(buffer, PATENTS_COLUMN_MAP, sheet.name)
         
         // Fallback academic year if missing but we can deduce from sheet name
-        const match = sheet.name.match(/^(\d{4})/)
-        const deducedYear = match ? `${parseInt(match[1]) - 1}-${match[1]}` : '2023-2024'
+        const match = sheetName.match(/(\d{4})/)
+        const deducedYear = match ? match[1] : '2026'
         
         rows.forEach(r => {
           if (!r.academic_year) r.academic_year = deducedYear
+          if (r.faculty_name) r.faculty_name = String(r.faculty_name).trim()
+          if (r.emp_id) r.emp_id = String(r.emp_id).trim().toUpperCase()
         })
         
         allRows.push(...rows)
         totalSkipped += skipped
-        console.log(`[Patent Import] Sheet ${sheet.name}: Found/Parsed ${rows.length} rows, Skipped ${skipped} empty/invalid rows.`)
-        sheetStats.push({ name: sheet.name, rowsFound: rows.length + skipped, rowsParsed: rows.length, rowsSkipped: skipped, skipped: false, error: null })
+        console.log(`[Patent Import] Sheet ${sheetName}: Found/Parsed ${rows.length} rows, Skipped ${skipped} empty/invalid rows.`)
+        sheetStats.push({ name: sheetName, rowsFound: rows.length + skipped, rowsParsed: rows.length, rowsSkipped: skipped, skipped: false, error: null })
       } catch (sheetErr: any) {
-        console.error(`[Patent Import] Error parsing sheet ${sheet.name}:`, sheetErr)
-        errors.push({ sheet: sheet.name, error: sheetErr.message || String(sheetErr) })
-        sheetStats.push({ name: sheet.name, skipped: false, error: sheetErr.message || String(sheetErr) })
+        console.error(`[Patent Import] Error parsing sheet ${sheetName}:`, sheetErr)
+        errors.push({ sheet: sheetName, error: sheetErr.message || String(sheetErr) })
+        sheetStats.push({ name: sheetName, skipped: false, error: sheetErr.message || String(sheetErr) })
       }
     }
 
@@ -94,7 +101,7 @@ export async function POST(request: Request) {
 
     if (mode === 'replace') {
       console.log(`[Patent Import] Mode is REPLACE. Initiating deletion of existing legacy_patents...`)
-      const { data: delData, error: delError, count: delCount } = await admin.from('legacy_patents').delete().not('id', 'is', null).select()
+      const { data: delData, error: delError } = await admin.from('legacy_patents').delete().not('id', 'is', null).select()
       if (delError) {
         console.error(`[Patent Import] Delete failed! Exact error:`, delError)
         return NextResponse.json({ 
@@ -113,10 +120,10 @@ export async function POST(request: Request) {
     if (mode !== 'replace' && appNosInFile.length > 0) {
       const { data: existing } = await admin
         .from('legacy_patents')
-        .select('application_number')
+        .select('application_number, emp_id')
         .in('application_number', appNosInFile)
       if (existing) {
-        existingAppNos = new Set(existing.map(e => e.application_number))
+        existingAppNos = new Set(existing.map(e => `${(e.application_number || '').trim()}:::${(e.emp_id || '').trim()}`))
       }
     }
 
@@ -126,11 +133,12 @@ export async function POST(request: Request) {
 
     for (const row of allRows) {
       if (row.application_number) {
-        if (existingAppNos.has(row.application_number) || fileAppNos.has(row.application_number)) {
+        const appKey = `${(row.application_number || '').trim()}:::${(row.emp_id || '').trim()}`
+        if (existingAppNos.has(appKey) || fileAppNos.has(appKey)) {
           deduppedCount++
           continue
         }
-        fileAppNos.add(row.application_number)
+        fileAppNos.add(appKey)
       }
       newRows.push(row)
     }
@@ -139,13 +147,17 @@ export async function POST(request: Request) {
 
     if (newRows.length > 0) {
       console.log(`[Patent Import] Initiating insert of ${newRows.length} records into legacy_patents...`)
-      const { error: insError } = await admin.from('legacy_patents').insert(newRows)
-      if (insError) {
-        console.error(`[Patent Import] Insert failed! Exact error:`, insError)
-        return NextResponse.json({ 
-          error: 'Database insert failed', 
-          details: insError 
-        }, { status: 500 })
+      const BATCH_SIZE = 500
+      for (let i = 0; i < newRows.length; i += BATCH_SIZE) {
+        const batch = newRows.slice(i, i + BATCH_SIZE)
+        const { error: insError } = await admin.from('legacy_patents').insert(batch)
+        if (insError) {
+          console.error(`[Patent Import] Insert failed on batch ${i}:`, insError)
+          return NextResponse.json({ 
+            error: 'Database insert failed: ' + insError.message, 
+            details: insError 
+          }, { status: 500 })
+        }
       }
       console.log(`[Patent Import] Insert successful.`)
     } else {

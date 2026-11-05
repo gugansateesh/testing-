@@ -42,7 +42,7 @@ export async function GET(request: Request) {
     const ws = workbook.addWorksheet('Patents')
 
     const headers = [
-      'S.No', 'Department', 'Application Number', 'Status', 'Inventors', 'Title', 'Applicants', 'Filed Date', 'Published/Granted Date', 'Publication/Grant Number', 'Assignee', 'Academic Year', 'Proof Link'
+      'S.No', 'Department', 'Application Number', 'Status', 'Inventors', 'Title', 'Applicants', 'Filed Date', 'Published/Granted Date', 'Publication/Grant Number', 'Assignee', 'Academic Year', 'Name of the Faculty', 'Employee ID', 'Proof Link'
     ]
     
     const headerRow = ws.addRow(headers)
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
     })
     headerRow.height = 30
 
-    const colWidths = [10, 20, 25, 15, 30, 40, 30, 15, 20, 30, 30, 15, 40]
+    const colWidths = [10, 20, 25, 15, 30, 40, 30, 15, 20, 30, 30, 15, 30, 18, 40]
     colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w })
 
     const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('en-IN') : ''
@@ -67,7 +67,8 @@ export async function GET(request: Request) {
       ws.addRow([
         idx + 1, row.department || '', row.application_number || '', row.status || '', row.inventors || '',
         row.title || '', row.applicants || '', fmtDate(row.filed_date), fmtDate(row.published_or_granted_date),
-        row.publication_or_grant_number || '', row.assignee || '', row.academic_year || '', row.proof_link || ''
+        row.publication_or_grant_number || '', row.assignee || '', row.academic_year || '',
+        row.faculty_name || row.name_of_faculty || '', row.emp_id || '', row.proof_link || ''
       ])
     })
 
