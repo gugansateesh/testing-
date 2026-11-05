@@ -33,7 +33,6 @@ export async function verifyToken(token: string): Promise<AuthResult | null> {
     try {
       const secret = new TextEncoder().encode(jwtSecret)
       const { payload } = await jwtVerify(token, secret, {
-        // Supabase tokens use HS256
         algorithms: ['HS256'],
       })
 
@@ -41,24 +40,27 @@ export async function verifyToken(token: string): Promise<AuthResult | null> {
       const role = payload.role as string | undefined
       const email = (payload.email as string) ?? ''
 
-      if (!userId || role !== 'authenticated') {
-        return null
+      if (userId && role === 'authenticated') {
+        return { id: userId, userId, email, role }
       }
-
-      return { id: userId, userId, email, role }
-    } catch {
-      // Invalid/expired token
-      return null
+    } catch (jwtErr: any) {
+      console.warn('Local JWT verify note (falling back to remote):', jwtErr?.message || jwtErr)
     }
   }
 
-  // ── Slow path fallback: remote getUser() call ─────────────────────────────
-  // NOTE: This makes a network request to Supabase Auth on every API call
-  // (~200–600 ms). Set SUPABASE_JWT_SECRET in .env.local to use the fast path.
-  const admin = createAdminClient()
-  const { data: { user }, error } = await admin.auth.getUser(token)
-  if (error || !user) return null
-  return { id: user.id, userId: user.id, email: user.email ?? '', role: 'authenticated' }
+  // ── Remote fallback: getUser() call ────────────────────────────────────────
+  try {
+    const admin = createAdminClient()
+    const { data: { user }, error } = await admin.auth.getUser(token)
+    if (error || !user) {
+      console.warn('Remote getUser verification failed:', error?.message)
+      return null
+    }
+    return { id: user.id, userId: user.id, email: user.email ?? '', role: 'authenticated' }
+  } catch (err: any) {
+    console.error('Auth verification fatal error:', err)
+    return null
+  }
 }
 
 /**

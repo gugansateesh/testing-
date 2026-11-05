@@ -6,6 +6,7 @@ import {
   BarChart3, FileText, IndianRupee, FlaskConical, Loader2, GraduationCap, Award, Users, Briefcase, ExternalLink, FolderKanban, Target
 } from 'lucide-react'
 import { useAdminAuth } from '@/context/AdminAuthContext'
+import { supabase } from '@/lib/supabase'
 
 export default function ReportsPage() {
   const router = useRouter()
@@ -16,9 +17,15 @@ export default function ReportsPage() {
 
   const fetchStats = useCallback(async (tok: string) => {
     try {
+      let freshTok = tok
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) freshTok = session.access_token
+      } catch {}
+
       const [res, targetRes] = await Promise.all([
-        fetch('/api/admin/reports/stats', { headers: { Authorization: `Bearer ${tok}` } }),
-        fetch('/api/admin/reports/publication-targets/summary?academic_year=2026', { headers: { Authorization: `Bearer ${tok}` } })
+        fetch('/api/admin/reports/stats', { headers: { Authorization: `Bearer ${freshTok}` } }),
+        fetch('/api/admin/reports/publication-targets/summary?academic_year=2026', { headers: { Authorization: `Bearer ${freshTok}` } })
       ])
       
       if (res.ok) {

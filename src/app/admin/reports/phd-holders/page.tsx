@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, Download, Upload, Loader2, Users, LogOut, Menu, X, BarChart3, FileText, IndianRupee, FlaskConical, ChevronDown, Megaphone, Briefcase, FolderKanban, Mail, Phone } from 'lucide-react'
 import { useAdminAuth } from '@/context/AdminAuthContext'
+import { supabase } from '@/lib/supabase'
 
 export default function PhdHoldersReportPage() {
   const router = useRouter()
@@ -25,10 +26,16 @@ export default function PhdHoldersReportPage() {
 
   const fetchRoster = useCallback(async (dept: string, year: string, phdFilter: boolean, tok: string) => {
     try {
+      let freshTok = tok
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) freshTok = session.access_token
+      } catch {}
+
       setPhdHolders([])
       setVisibleCount(50)
       const deptQuery = dept === 'all' ? '' : encodeURIComponent(dept)
-      const res = await fetch(`/api/admin/reports/phd-holders?dept=${deptQuery}&year=${year}&phdOnly=${phdFilter}&_t=${Date.now()}`, { headers: { Authorization: `Bearer ${tok}` } })
+      const res = await fetch(`/api/admin/reports/phd-holders?dept=${deptQuery}&year=${year}&phdOnly=${phdFilter}&_t=${Date.now()}`, { headers: { Authorization: `Bearer ${freshTok}` } })
       if (res.ok) {
         const { data, departments: deptList, years: yearList } = await res.json()
         setPhdHolders(data || [])
