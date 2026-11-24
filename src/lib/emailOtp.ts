@@ -1,9 +1,10 @@
 import crypto from 'crypto'
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 import { createAdminClient } from '@/lib/supabase'
 
-const MAIN_SENDER_EMAIL = process.env.SMTP_USER || 'hamsinikrishna.s@sece.ac.in'
 const MAIN_SENDER_NAME = 'QuantumRIMS - Sri Eshwar Research Portal'
+// Using Resend's default sender (no domain verification needed on free plan)
+const MAIN_SENDER_EMAIL = 'onboarding@resend.dev'
 const OTP_EXPIRY_MINUTES = 10
 
 interface MemoryOtpRecord {
@@ -18,24 +19,10 @@ const inMemoryOtpStore: Map<string, MemoryOtpRecord> =
   (globalThis as any).__quantumRimsOtpStore ||
   ((globalThis as any).__quantumRimsOtpStore = new Map<string, MemoryOtpRecord>())
 
-function createTransporter() {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com'
-  const port = Number(process.env.SMTP_PORT) || 465
-  const user = process.env.SMTP_USER || 'hamsinikrishna.s@sece.ac.in'
-  const pass = (process.env.SMTP_PASS || '').replace(/\s+/g, '')
-
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: {
-      user,
-      pass,
-    },
-    connectionTimeout: 5000,
-    greetingTimeout: 5000,
-    socketTimeout: 8000,
-  })
+function createResendClient() {
+  const apiKey = process.env.RESEND_API_KEY || ''
+  if (!apiKey) throw new Error('RESEND_API_KEY is not set in environment variables')
+  return new Resend(apiKey)
 }
 
 /**
@@ -166,20 +153,13 @@ export async function verifyOtp(email: string, inputOtp: string): Promise<{ vali
 }
 
 /**
- * Sends branded OTP email to staff member using Gmail SMTP.
+ * Sends branded OTP email to staff member using Resend API (HTTPS - no port blocking).
  */
-export async function sendOtpEmail(toEmail: string, otp: string, recipientName: string): Promise<{ success: boolean; devMode?: boolean; error?: string }> {
+export async function sendOtpEmail(toEmail: string, otp: string, recipientName: string): Promise<{ success: boolean; error?: string }> {
   const cleanEmail = toEmail.trim().toLowerCase()
 
-  console.log(`\n======================================================`)
-  console.log(`🔑 [STAFF OTP GENERATED]`)
-  console.log(`   To: ${recipientName} <${cleanEmail}>`)
-  console.log(`   Code: ${otp}`)
-  console.log(`   Valid for: ${OTP_EXPIRY_MINUTES} minutes`)
-  console.log(`======================================================\n`)
-
   try {
-    const transporter = createTransporter()
+    const resend = createResendClient()
 
     const subject = `${otp} is your QuantumRIMS verification code`
     const htmlContent = `
@@ -246,38 +226,30 @@ export async function sendOtpEmail(toEmail: string, otp: string, recipientName: 
 </html>
 `
 
-    await transporter.sendMail({
-      from: `"${MAIN_SENDER_NAME}" <${MAIN_SENDER_EMAIL}>`,
-      to: cleanEmail,
+    const { data, error } = await resend.emails.send({
+      from: `${MAIN_SENDER_NAME} <${MAIN_SENDER_EMAIL}>`,
+      to: [cleanEmail],
       subject,
-      text: `Hello ${recipientName || 'Faculty'},\n\nYour QuantumRIMS verification code is: ${otp}\n\nThis code expires in 10 minutes.\n\nSri Eshwar College of Engineering`,
       html: htmlContent,
+      text: `Hello ${recipientName || 'Faculty'},\n\nYour QuantumRIMS verification code is: ${otp}\n\nThis code expires in 10 minutes.\n\nSri Eshwar College of Engineering`,
     })
 
-    console.log(`📧 [EMAIL DELIVERED TO GMAIL SMTP INBOX]`)
-    console.log(`   To: ${cleanEmail}`)
+    if (error) {
+      console.error('Resend API error:', error)
+      return { success: false, error: error.message || 'Resend delivery failed' }
+    }
+
+    console.log(`\n======================================================`)
+    console.log(`📧 [EMAIL OTP SENT VIA RESEND]`)
+    console.log(`   From: ${MAIN_SENDER_EMAIL}`)
+    console.log(`   To: ${recipientName} <${cleanEmail}>`)
+    console.log(`   Code: ${otp}`)
+    console.log(`   Resend ID: ${data?.id}`)
+    console.log(`======================================================\n`)
 
     return { success: true }
   } catch (error: any) {
-    console.error('Failed to send OTP via Gmail SMTP:', error?.message || error)
-
-    const isLocalDev = process.env.NODE_ENV !== 'production' || process.env.ALLOW_DEV_FALLBACK === 'true'
-    const isNetworkBlock = error?.code === 'ETIMEDOUT' || error?.code === 'ECONNREFUSED' || error?.code === 'ENETUNREACH' || error?.timeoutType === 'CONNECT_TIMEOUT'
-
-    // If local development and network firewall blocks SMTP port 465, gracefully allow testing
-    if (isLocalDev && isNetworkBlock) {
-      console.warn(`\n⚠️  [CAMPUS NETWORK FIREWALL BLOCKED SMTP PORT 465]`)
-      console.warn(`   The campus Wi-Fi network blocks outbound SMTP connections to smtp.gmail.com:465.`)
-      console.warn(`   For local testing, use verification code: 👉 ${otp} 👈`)
-      console.warn(`======================================================\n`)
-
-      return {
-        success: true,
-        devMode: true,
-        error: `Local campus network blocked port 465. Development verification code: ${otp}`,
-      }
-    }
-
+    console.error('Failed to send OTP via Resend:', error)
     return { success: false, error: error.message || 'Failed to send email' }
   }
 }

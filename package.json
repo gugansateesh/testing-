@@ -33,6 +33,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.80.0",
     "recharts": "^3.10.1",
+    "resend": "^6.39.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
