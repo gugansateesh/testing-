@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, requireAdmin } from '@/lib/verifyAuth'
 import { fetchAllRows } from '@/lib/fetchAllRows'
 
 export const dynamic = 'force-dynamic'
@@ -11,6 +11,7 @@ export async function GET(request: Request) {
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const auth = await verifyToken(token)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await requireAdmin(auth))) return NextResponse.json({ error: 'Forbidden: admin only' }, { status: 403 })
 
   const url = new URL(request.url)
   const yearFilter = url.searchParams.get('year') || ''
