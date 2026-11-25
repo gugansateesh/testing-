@@ -77,13 +77,7 @@ export async function GET(request: Request) {
       }),
       all('legacy_seed_fund_grants', 'dept, academic_year, amount_sanctioned', q => deptFilter ? q.eq('dept', deptFilter) : q),
       all('research_grants', 'department, academic_year, grant_amount', q => deptFilter ? q.eq('department', deptFilter) : q),
-      // NOTE: single unpaged query (capped at 1000 rows by PostgREST), as before
-      (async () => {
-        let q = admin.from('legacy_incentives').select('department, received_amount, amount_credited_date, submitted_date, date_of_publication, incentive_year')
-        if (deptFilter) q = q.eq('department', deptFilter)
-        const { data } = await q
-        return data || []
-      })(),
+      all('legacy_incentives', 'department, received_amount, amount_credited_date, submitted_date, date_of_publication, incentive_year', q => deptFilter ? q.eq('department', deptFilter) : q),
       all('legacy_consultancy', 'department, academic_year, project_date, amount', q => deptFilter ? q.eq('department', deptFilter) : q),
       // 6. PhD Holders
       all('master_faculty', 'dept', q => {
