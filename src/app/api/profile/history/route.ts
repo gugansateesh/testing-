@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, requireAdmin } from '@/lib/verifyAuth'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,6 +19,7 @@ export async function GET(request: Request) {
 
   // Every section is independent — fetch them all concurrently
   const [
+    { data: ownFaculty },
     { data: publications },
     { data: livePublications },
     { data: patents },
@@ -28,6 +29,8 @@ export async function GET(request: Request) {
     { data: consultancy },
     { data: projectGrants },
   ] = await Promise.all([
+    // Caller's own emp_id — used to ensure staff can only read their own history
+    admin.from('master_faculty').select('emp_id').eq('user_id', auth.id).maybeSingle(),
     // Fetch Publications (from legacy_publications by emp_id)
     admin
       .from('legacy_publications')
@@ -80,6 +83,11 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false })
       .limit(50),
   ])
+  // Staff may only view their own history; admins may view anyone's
+  if (ownFaculty?.emp_id !== empId && !(await requireAdmin(auth))) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const cutoff = cutoffSetting?.value ? Number(cutoffSetting.value) : undefined
 
   const legacyMapped = (publications || []).map(p => ({ ...p, _source: 'legacy' }))
