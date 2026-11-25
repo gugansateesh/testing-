@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 import { parseSpreadsheetRows } from '@/lib/importSpreadsheet'
 import ExcelJS from 'exceljs'
 
@@ -44,6 +44,9 @@ function normalizeAcademicYear(raw: string | null | undefined): string | null {
 }
 
 export async function POST(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   try {
     const formData = await request.formData()
     const mode = formData.get('mode') as string || 'append'

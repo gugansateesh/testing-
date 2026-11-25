@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { fetchAllRows } from '@/lib/fetchAllRows'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function GET(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const admin = createAdminClient()
   const token = extractToken(request)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

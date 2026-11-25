@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 import { createAdminClient } from '@/lib/supabase'
 import { fetchAllRows } from '@/lib/fetchAllRows'
 
@@ -45,6 +45,9 @@ function submissionToPubShape(sub: any) {
 }
 
 export async function GET(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const token = extractToken(request)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const auth = await verifyToken(token)

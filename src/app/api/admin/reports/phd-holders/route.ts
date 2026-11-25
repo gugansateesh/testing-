@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 import staffDirectoryRaw from '@/data/staff_directory.json'
 
 export const dynamic = 'force-dynamic'
@@ -13,6 +13,9 @@ interface StaffContact {
 }
 
 export async function GET(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const token = extractToken(request)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const auth = await verifyToken(token)

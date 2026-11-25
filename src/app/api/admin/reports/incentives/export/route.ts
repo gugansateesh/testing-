@@ -2,11 +2,14 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { fetchAllRows } from '@/lib/fetchAllRows'
 import ExcelJS from 'exceljs'
-import { verifyToken } from '@/lib/verifyAuth'
+import { verifyToken, adminGuard } from '@/lib/verifyAuth'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const { searchParams } = new URL(request.url)
   const token = searchParams.get('token')
   
