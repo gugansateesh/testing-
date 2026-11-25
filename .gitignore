@@ -28,6 +28,10 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# credentials — never commit
+creds.md
+*.creds.md
+
 # vercel
 .vercel
 
