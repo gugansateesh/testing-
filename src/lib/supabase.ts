@@ -25,3 +25,12 @@ export function createAdminClient(): SupabaseClient {
   }
   return adminClient
 }
+
+/**
+ * Escapes LIKE/ILIKE wildcards so user input is matched literally
+ * (case-insensitive exact match, no pattern injection). PostgREST also treats
+ * `*` as a wildcard, so it is escaped too.
+ */
+export function escapeLike(value: string): string {
+  return value.replace(/[\\%_*]/g, ch => '\\' + ch)
+}
