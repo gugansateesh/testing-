@@ -47,28 +47,17 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.replace('/login'); return }
       setSession(session)
-      const { data, error } = await supabase
-        .from('master_faculty')
-        .select('emp_id, name, dept, designation, type, user_id, is_registered')
-        .eq('user_id', session.user.id)
-        .single()
-      if (error || !data) { await supabase.auth.signOut(); router.replace('/login'); return }
-      
-      // Fetch unread count
+      // Faculty profile + unread announcement count in a single request
+      let data: FacultyProfile | null = null
       try {
-        const res = await fetch('/api/announcements', { headers: { Authorization: `Bearer ${session.access_token}` } })
+        const res = await fetch('/api/portal/bootstrap', { headers: { Authorization: `Bearer ${session.access_token}` } })
         if (res.ok) {
-          const { data: anns } = await res.json()
-          if (anns && anns.length > 0) {
-            const { data: readRow } = await supabase.from('announcement_reads').select('last_seen_at').eq('user_id', session.user.id).single()
-            if (!readRow) setUnreadCount(anns.length)
-            else {
-              const lastSeen = new Date(readRow.last_seen_at)
-              setUnreadCount(anns.filter((a: any) => new Date(a.created_at) > lastSeen).length)
-            }
-          }
+          const body = await res.json()
+          data = body.faculty
+          setUnreadCount(body.unreadCount || 0)
         }
       } catch(e) {}
+      if (!data) { await supabase.auth.signOut(); router.replace('/login'); return }
 
       if (mounted) { setFaculty(data as FacultyProfile); setLoading(false) }
     }
