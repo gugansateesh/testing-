@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { calculateIncentive } from '@/lib/incentive'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const params = await props.params;
   const admin = createAdminClient()
   const token = extractToken(request)

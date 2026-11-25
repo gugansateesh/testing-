@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { fetchAllRows } from '@/lib/fetchAllRows'
 import ExcelJS from 'exceljs'
-import { verifyToken } from '@/lib/verifyAuth'
+import { verifyToken, adminGuard } from '@/lib/verifyAuth'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const { searchParams } = new URL(request.url)
   const token = searchParams.get('token')
   
@@ -20,26 +24,13 @@ export async function GET(request: Request) {
 
   try {
     const admin = createAdminClient()
-    let allData: any[] = []
-    let from = 0
-    const step = 1000
-    while (true) {
-      let q = admin.from('legacy_incentives').select('*')
+    const allData: any[] = await fetchAllRows(admin, 'legacy_incentives', '*', q => {
       if (year && year !== 'all') q = q.eq('incentive_year', year)
       if (dept && dept !== 'all') q = q.ilike('department', dept.trim())
       if (startDate) q = q.gte('amount_credited_date', startDate)
       if (endDate) q = q.lte('amount_credited_date', endDate)
-
-      const { data, error } = await q.range(from, from + step - 1)
-      if (error) throw error
-      if (data && data.length > 0) {
-        allData.push(...data)
-        if (data.length < step) break
-        from += step
-      } else {
-        break
-      }
-    }
+      return q
+    })
     const data = allData;
 
     const sortedData = (data || []).sort((a: any, b: any) => {

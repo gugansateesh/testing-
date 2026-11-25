@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function GET(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const admin = createAdminClient()
   const token = extractToken(request)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -22,22 +25,32 @@ export async function GET(request: Request) {
     if (year && year !== 'all') legacyQuery = legacyQuery.eq('academic_year', year)
     if (dept && dept !== 'all') legacyQuery = legacyQuery.ilike('department', dept.trim())
     
-    const { data: legacyData, error: legacyError } = await legacyQuery
-    if (legacyError) throw legacyError
-
     // 2. Fetch live approved project grants
     let liveQuery = admin
       .from('project_grant_applications')
       .select('id, research_project_title, funding_agency, co_investigators, project_duration_months, total_proposed_budget, created_at, applicant_id')
       .eq('status', 'approved')
 
+    // Legacy rows, live rows and the dropdown option lists are independent —
+    // fetch them concurrently.
+    const [
+      { data: legacyData, error: legacyError },
+      liveRes,
+      { data: legacyDepts },
+      { data: legacyYears },
+    ] = await Promise.all([
+      legacyQuery,
+      Promise.resolve(liveQuery).catch((e: any) => ({ data: null, error: e })),
+      admin.rpc('get_distinct_column_values', { p_table_name: 'research_grants', p_column_name: 'department' }, { get: true }),
+      admin.rpc('get_distinct_column_values', { p_table_name: 'research_grants', p_column_name: 'academic_year' }, { get: true }),
+    ])
+    if (legacyError) throw legacyError
+
     let liveDataRaw: any[] = []
-    try {
-      const { data, error: liveError } = await liveQuery
-      if (liveError) throw liveError
-      liveDataRaw = data || []
-    } catch (e: any) {
-      console.warn("Could not fetch live grants (table might not exist):", e.message)
+    if (liveRes.error) {
+      console.warn("Could not fetch live grants (table might not exist):", liveRes.error.message)
+    } else {
+      liveDataRaw = liveRes.data || []
     }
 
     // Manually fetch and join master_faculty
@@ -100,9 +113,7 @@ export async function GET(request: Request) {
       return 0
     })
 
-    // Fetch distinct values via RPC
-    const { data: legacyDepts } = await admin.rpc('get_distinct_column_values', { p_table_name: 'research_grants', p_column_name: 'department' })
-    const { data: legacyYears } = await admin.rpc('get_distinct_column_values', { p_table_name: 'research_grants', p_column_name: 'academic_year' })
+    // Distinct values via RPC (fetched concurrently above)
     
     const deptSet = new Set((legacyDepts || []).map((d: any) => d.val).filter(Boolean))
     const yearSet = new Set((legacyYears || []).map((y: any) => y.val).filter(Boolean))
@@ -124,6 +135,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const admin = createAdminClient()
   const token = extractToken(request)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

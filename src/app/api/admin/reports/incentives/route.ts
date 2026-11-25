@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 import { createAdminClient } from '@/lib/supabase'
+import { fetchAllRows } from '@/lib/fetchAllRows'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -28,6 +29,9 @@ function categoryToPublicationType(category: string, bookType?: string, patentTy
 }
 
 export async function GET(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const admin = createAdminClient()
   const token = extractToken(request)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -41,29 +45,8 @@ export async function GET(request: Request) {
   const endDate = searchParams.get('endDate')
 
   try {
-    // ── 1. Legacy imported data ──────────────────────────────────────────────
-    let allData: any[] = []
-    let from = 0
-    const step = 1000
-    while (true) {
-      let query = admin.from('legacy_incentives').select('*')
-      if (year && year !== 'all') query = query.eq('incentive_year', year)
-      if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
-      if (startDate) query = query.gte('amount_credited_date', startDate)
-      if (endDate) query = query.lte('amount_credited_date', endDate)
-
-      const { data, error } = await query.range(from, from + step - 1)
-      if (error) throw error
-      if (data && data.length > 0) {
-        allData.push(...data)
-        if (data.length < step) break
-        from += step
-      } else {
-        break
-      }
-    }
-
-    // ── 2. Live portal approved incentive_applications ───────────────────────
+    // ── 1. Legacy imported data + 2. live approved incentive_applications +
+    // applicant PhD status — all independent, fetched concurrently ────────────
     let appQuery = admin
       .from('incentive_applications')
       .select(`
@@ -78,31 +61,38 @@ export async function GET(request: Request) {
       appQuery = (appQuery as any).ilike('submissions.department', dept.trim())
     }
 
-    const { data: appData, error: appError } = await appQuery
+    const [allData, { data: appData, error: appError }, facultyData, legacyMetaDeptsRes, legacyMetaYearsRes, liveSubs] = await Promise.all([
+      fetchAllRows(admin, 'legacy_incentives', '*', q => {
+        if (year && year !== 'all') q = q.eq('incentive_year', year)
+        if (dept && dept !== 'all') q = q.ilike('department', dept.trim())
+        if (startDate) q = q.gte('amount_credited_date', startDate)
+        if (endDate) q = q.lte('amount_credited_date', endDate)
+        return q
+      }),
+      appQuery,
+      // Resolve PhD status for each applicant (only rows with a user_id can match)
+      fetchAllRows(admin, 'master_faculty', 'user_id, type', q => q.not('user_id', 'is', null)).catch(() => [] as any[]),
+      // Dropdown metadata: every distinct department / year in legacy_incentives
+      admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_incentives', p_column_name: 'department' }, { get: true }),
+      admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_incentives', p_column_name: 'incentive_year' }, { get: true }),
+      fetchAllRows(admin, 'submissions', 'department, year').catch(() => [] as any[]),
+    ])
     if (appError) throw appError
+    const legacyMetaDepts: any[] = legacyMetaDeptsRes.data || []
+    const legacyMetaYears: any[] = legacyMetaYearsRes.data || []
 
-    // Fetch master_faculty to resolve PhD status for each applicant
-    const applicantIds = (appData || []).map((a: any) => a.applicant_id).filter(Boolean)
-    let facultyMap = new Map<string, string>()
-    if (applicantIds.length > 0) {
-      const { data: facultyData } = await admin
-        .from('master_faculty')
-        .select('user_id, type')
-        .in('user_id', applicantIds)
-      if (facultyData) {
-        facultyData.forEach((f: any) => {
-          // type is 'Doctorate', 'Non-Doctorate', 'Doing PhD', etc.
-          // Map to same labels used in legacy incentives ('Dr.', 'Doing Phd', etc.)
-          let label = '—'
-          const t = (f.type || '').toLowerCase()
-          if (t === 'doctorate') label = 'Dr.'
-          else if (t === 'doing phd' || t === 'doing_phd') label = 'Doing PhD'
-          else if (t === 'non-doctorate' || t === 'non_doctorate') label = 'Non-Doctorate'
-          else if (f.type) label = f.type
-          facultyMap.set(f.user_id, label)
-        })
-      }
-    }
+    const facultyMap = new Map<string, string>()
+    facultyData.forEach((f: any) => {
+      // type is 'Doctorate', 'Non-Doctorate', 'Doing PhD', etc.
+      // Map to same labels used in legacy incentives ('Dr.', 'Doing Phd', etc.)
+      let label = '—'
+      const t = (f.type || '').toLowerCase()
+      if (t === 'doctorate') label = 'Dr.'
+      else if (t === 'doing phd' || t === 'doing_phd') label = 'Doing PhD'
+      else if (t === 'non-doctorate' || t === 'non_doctorate') label = 'Non-Doctorate'
+      else if (f.type) label = f.type
+      facultyMap.set(f.user_id, label)
+    })
 
     // Normalise portal applications to match legacy_incentives shape
     const portalRows = (appData || [])
@@ -161,18 +151,9 @@ export async function GET(request: Request) {
       if (trimmed) yearSet.add(trimmed)
     }
 
-    // Fetch distinct metadata from legacy_incentives
-    const { data: legacyMeta } = await admin
-      .from('legacy_incentives')
-      .select('department, incentive_year')
-      .limit(10000)
-
-    if (legacyMeta && legacyMeta.length > 0) {
-      legacyMeta.forEach((r: any) => {
-        addDept(r.department)
-        addYear(r.incentive_year)
-      })
-    }
+    // Distinct metadata from legacy_incentives (fetched concurrently above)
+    legacyMetaDepts.forEach((r: any) => addDept(r.val))
+    legacyMetaYears.forEach((r: any) => addYear(r.val))
 
     // Also populate from currently fetched legacy data to ensure nothing is missed
     allData.forEach((r: any) => {
@@ -186,11 +167,6 @@ export async function GET(request: Request) {
       if (sub?.department) addDept(sub.department)
       if (sub?.year) addYear(sub.year)
     })
-
-    const { data: liveSubs } = await admin
-      .from('submissions')
-      .select('department, year')
-      .limit(5000)
 
     if (liveSubs) {
       liveSubs.forEach((s: any) => {

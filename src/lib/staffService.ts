@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase'
+import { createAdminClient, escapeLike } from '@/lib/supabase'
 import staffDirectoryRaw from '@/data/staff_directory.json'
 
 export interface StaffRecord {
@@ -29,7 +29,7 @@ export async function getStaffByEmail(email: string): Promise<StaffRecord | null
     const { data, error } = await admin
       .from('master_faculty')
       .select('*')
-      .ilike('email', cleanEmail)
+      .ilike('email', escapeLike(cleanEmail))
       .limit(1)
       .maybeSingle()
 

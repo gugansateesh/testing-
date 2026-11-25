@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 import { createAdminClient } from '@/lib/supabase'
+import { fetchAllRows } from '@/lib/fetchAllRows'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function GET(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const admin = createAdminClient()
   const token = extractToken(request)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -17,15 +21,19 @@ export async function GET(request: Request) {
   const dept = searchParams.get('dept')
 
   try {
-    let query = admin.from('legacy_research_supervisors').select('*')
-    if (year && year !== 'all') query = query.eq('academic_year', year)
-    if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
-    
-    // Get unique departments and years for the dropdown
-    const { data: allSupervisorsMeta } = await admin
-      .from('legacy_research_supervisors')
-      .select('department, academic_year')
-      .limit(5000)
+    // Dropdown metadata and the filtered rows are independent — fetch concurrently
+    const [{ data: allSupervisorsMeta }, allData] = await Promise.all([
+      // Get unique departments and years for the dropdown
+      admin
+        .from('legacy_research_supervisors')
+        .select('department, academic_year')
+        .limit(5000),
+      fetchAllRows(admin, 'legacy_research_supervisors', '*', q => {
+        if (year && year !== 'all') q = q.eq('academic_year', year)
+        if (dept && dept !== 'all') q = q.ilike('department', dept.trim())
+        return q
+      }),
+    ])
 
     const deptSet = new Set<string>()
     const yearSet = new Set<string>()
@@ -44,26 +52,6 @@ export async function GET(request: Request) {
     const departments = Array.from(deptSet).sort((a, b) => a.localeCompare(b))
     const years = Array.from(yearSet).sort((a, b) => b.localeCompare(a))
 
-    // Pagination for legacy_research_supervisors
-    let allData: any[] = []
-    let from = 0
-    const step = 1000
-    while (true) {
-      let queryPage = admin.from('legacy_research_supervisors').select('*').range(from, from + step - 1)
-      if (year && year !== 'all') queryPage = queryPage.eq('academic_year', year)
-      if (dept && dept !== 'all') queryPage = queryPage.ilike('department', dept.trim())
-      
-      const { data, error } = await queryPage
-      if (error) throw error
-      if (data && data.length > 0) {
-        allData.push(...data)
-        if (data.length < step) break
-        from += step
-      } else {
-        break
-      }
-    }
-    
     // Sort descending by academic year
     const result = allData.sort((a: any, b: any) => {
       if (a.academic_year !== b.academic_year) return (b.academic_year || '').localeCompare(a.academic_year || '')

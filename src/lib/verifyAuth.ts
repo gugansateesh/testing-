@@ -88,3 +88,19 @@ export async function requireAdmin(authResult: AuthResult): Promise<boolean> {
     .filter(Boolean)
   return allowed.includes(authResult.email.toLowerCase())
 }
+
+/**
+ * Admin gate for route handlers. Returns a 401/403 response to send back, or
+ * null when the caller is an allow-listed admin:
+ *
+ *   const denied = await adminGuard(request)
+ *   if (denied) return denied
+ */
+export async function adminGuard(request: Request): Promise<Response | null> {
+  const token = extractToken(request)
+  if (!token) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await verifyToken(token)
+  if (!auth) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await requireAdmin(auth))) return Response.json({ error: 'Forbidden: admin only' }, { status: 403 })
+  return null
+}

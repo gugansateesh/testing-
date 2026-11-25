@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 import { createAdminClient } from '@/lib/supabase'
+import { fetchAllRows } from '@/lib/fetchAllRows'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -44,6 +45,9 @@ function submissionToPubShape(sub: any) {
 }
 
 export async function GET(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const token = extractToken(request)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const auth = await verifyToken(token)
@@ -60,46 +64,35 @@ export async function GET(request: Request) {
   try {
     const admin = createAdminClient()
 
-    // ── 1. Fetch legacy_publications (paginated) ──────────────────────────────
-    let legacyRaw: any[] = []
-    let hasMore = true
-    let page = 0
-    const pageSize = 1000
-
-    while (hasMore) {
-      let query = admin.from('legacy_publications').select('*').range(page * pageSize, (page + 1) * pageSize - 1)
-
-      if (year && year !== 'all') query = query.eq('year', parseInt(year))
-      if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
-      if (month && month !== 'all') query = query.eq('publication_month', month)
-      if (startDate) query = query.gte('publication_date', startDate)
-      if (endDate) query = query.lte('publication_date', endDate)
-      if (duplicate && duplicate !== 'all') query = query.eq('is_duplicate', duplicate === 'yes')
-
-      const { data: pageData, error } = await query
-      if (error) throw error
-
-      if (pageData && pageData.length > 0) {
-        legacyRaw = [...legacyRaw, ...pageData]
-        if (pageData.length < pageSize) hasMore = false
-        else page++
-      } else {
-        hasMore = false
-      }
-    }
-
-    // ── 2. Fetch approved submissions ─────────────────────────────────────────
+    // ── 1+2. Fetch legacy_publications, approved submissions and the filter
+    // option lists concurrently ────────────────────────────────────────────────
     // Apply the same year/dept/month/date filters that apply to legacy rows.
     // The `duplicate` filter does not apply to live submissions (they're never duplicates).
-    let subsQuery = admin.from('submissions').select('*').eq('status', 'approved')
-
-    if (year && year !== 'all') subsQuery = subsQuery.eq('year', parseInt(year))
-    if (dept && dept !== 'all') subsQuery = subsQuery.ilike('department', dept.trim())
     // month/startDate/endDate are based on publication_date — handle gracefully if column missing
     // We select publication_date but don't filter on it server-side;
     // it's used only for display and client-side month derivation.
+    const [legacyRaw, subsResult, legacyDeptsRes, legacyYearsRes, legacyMonthsRes] = await Promise.all([
+      fetchAllRows(admin, 'legacy_publications', '*', q => {
+        if (year && year !== 'all') q = q.eq('year', parseInt(year))
+        if (dept && dept !== 'all') q = q.ilike('department', dept.trim())
+        if (month && month !== 'all') q = q.eq('publication_month', month)
+        if (startDate) q = q.gte('publication_date', startDate)
+        if (endDate) q = q.lte('publication_date', endDate)
+        if (duplicate && duplicate !== 'all') q = q.eq('is_duplicate', duplicate === 'yes')
+        return q
+      }),
+      fetchAllRows(admin, 'submissions', '*', q => {
+        q = q.eq('status', 'approved')
+        if (year && year !== 'all') q = q.eq('year', parseInt(year))
+        if (dept && dept !== 'all') q = q.ilike('department', dept.trim())
+        return q
+      }).then(data => ({ data, error: null as any }), error => ({ data: null as any[] | null, error })),
+      admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_publications', p_column_name: 'department' }, { get: true }),
+      admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_publications', p_column_name: 'year' }, { get: true }),
+      admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_publications', p_column_name: 'publication_month' }, { get: true }),
+    ])
 
-    const { data: subsData, error: subsError } = await subsQuery
+    const { data: subsData, error: subsError } = subsResult
     if (subsError) {
       // If publication_date column doesn't exist yet, still return data without it
       console.warn('Submissions fetch warning:', subsError.message)
@@ -151,9 +144,9 @@ export async function GET(request: Request) {
     })
 
     // ── 5. Compute filter option lists from combined set ───────────────────────
-    const { data: legacyDepts } = await admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_publications', p_column_name: 'department' })
-    const { data: legacyYears } = await admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_publications', p_column_name: 'year' })
-    const { data: legacyMonths } = await admin.rpc('get_distinct_column_values', { p_table_name: 'legacy_publications', p_column_name: 'publication_month' })
+    const legacyDepts = legacyDeptsRes.data
+    const legacyYears = legacyYearsRes.data
+    const legacyMonths = legacyMonthsRes.data
 
     const deptSet = new Set<string>((legacyDepts || []).map((d: any) => (d.val || '').toUpperCase().trim()).filter(Boolean))
     const yearSet = new Set<string>((legacyYears || []).map((y: any) => String(y.val)).filter(Boolean))

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { fetchAllRows } from '@/lib/fetchAllRows'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 import ExcelJS from 'exceljs'
 
 export const dynamic = 'force-dynamic'
@@ -37,6 +38,9 @@ function submissionToPubShape(sub: any) {
 }
 
 export async function GET(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   const admin = createAdminClient()
   const token = extractToken(request)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -52,39 +56,23 @@ export async function GET(request: Request) {
   const duplicate = searchParams.get('duplicate')
 
   try {
-    // ── 1. Legacy publications (paginated) ────────────────────────────────────
-    let legacyRaw: any[] = []
-    let hasMore = true
-    let page = 0
-    const pageSize = 1000
-
-    while (hasMore) {
-      let query = admin.from('legacy_publications').select('*').range(page * pageSize, (page + 1) * pageSize - 1)
-      if (year && year !== 'all') query = query.eq('year', parseInt(year))
-      if (dept && dept !== 'all') query = query.ilike('department', dept.trim())
-      if (month && month !== 'all') query = query.eq('publication_month', month)
-      if (startDate) query = query.gte('publication_date', startDate)
-      if (endDate) query = query.lte('publication_date', endDate)
-      if (duplicate && duplicate !== 'all') query = query.eq('is_duplicate', duplicate === 'yes')
-
-      const { data: pageData, error } = await query
-      if (error) throw error
-
-      if (pageData && pageData.length > 0) {
-        legacyRaw = [...legacyRaw, ...pageData]
-        if (pageData.length < pageSize) hasMore = false
-        else page++
-      } else {
-        hasMore = false
-      }
-    }
-
-    // ── 2. Approved submissions ───────────────────────────────────────────────
+    // ── 1. Legacy publications + 2. approved submissions (concurrent) ─────────
     let subsQuery = admin.from('submissions').select('*').eq('status', 'approved')
     if (year && year !== 'all') subsQuery = subsQuery.eq('year', parseInt(year))
     if (dept && dept !== 'all') subsQuery = subsQuery.ilike('department', dept.trim())
 
-    const { data: subsData } = await subsQuery
+    const [legacyRaw, { data: subsData }] = await Promise.all([
+      fetchAllRows(admin, 'legacy_publications', '*', q => {
+        if (year && year !== 'all') q = q.eq('year', parseInt(year))
+        if (dept && dept !== 'all') q = q.ilike('department', dept.trim())
+        if (month && month !== 'all') q = q.eq('publication_month', month)
+        if (startDate) q = q.gte('publication_date', startDate)
+        if (endDate) q = q.lte('publication_date', endDate)
+        if (duplicate && duplicate !== 'all') q = q.eq('is_duplicate', duplicate === 'yes')
+        return q
+      }),
+      subsQuery,
+    ])
     const mappedSubs = (subsData || []).map(submissionToPubShape)
 
     const filteredSubs = mappedSubs.filter(s => {

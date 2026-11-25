@@ -435,16 +435,13 @@ export async function POST(request: Request) {
           parts: result.candidates?.[0]?.content?.parts || []
         })
         
-        const functionResponses = []
-        for (const call of functionCalls) {
-          const toolResult = await executeTool(call.name || '', call.args, admin)
-          functionResponses.push({
-            functionResponse: {
-              name: call.name,
-              response: toolResult
-            }
-          })
-        }
+        // Tools are read-only and independent — run them concurrently (order is preserved)
+        const functionResponses = await Promise.all(functionCalls.map(async call => ({
+          functionResponse: {
+            name: call.name,
+            response: await executeTool(call.name || '', call.args, admin)
+          }
+        })))
         
         currentHistory.push({
           role: 'user',

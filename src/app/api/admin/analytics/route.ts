@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, requireAdmin } from '@/lib/verifyAuth'
+import { fetchAllRows } from '@/lib/fetchAllRows'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,47 +11,89 @@ export async function GET(request: Request) {
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const auth = await verifyToken(token)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await requireAdmin(auth))) return NextResponse.json({ error: 'Forbidden: admin only' }, { status: 403 })
 
   const url = new URL(request.url)
   const yearFilter = url.searchParams.get('year') || ''
   const deptFilter = url.searchParams.get('department') || ''
 
   try {
-    // 1. Fetch Submissions (Scopus)
-    let subQuery = admin.from('submissions').select('department, year').eq('status', 'approved')
-    if (yearFilter) subQuery = subQuery.eq('year', parseInt(yearFilter))
-    if (deptFilter) subQuery = subQuery.eq('department', deptFilter)
-    const { data: submissions } = await subQuery
+    // All source tables are independent, so they are fetched concurrently.
+    // fetchAllRows pages past the PostgREST 1000-row cap in parallel.
+    // A failed source counts as empty (the previous implementation ignored
+    // query errors the same way), so one bad table never blanks the dashboard.
+    const all = (table: string, columns: string, filters?: (q: any) => any) =>
+      fetchAllRows(admin, table, columns, filters).catch((err: any) => {
+        console.warn(`[analytics] ${table} query failed:`, err?.message)
+        return [] as any[]
+      })
 
-    // 2. Fetch Incentives and Patents
-    let incQuery = admin.from('incentive_applications').select('category, department, year, calculated_amount').eq('status', 'approved')
-    if (yearFilter) incQuery = incQuery.eq('year', parseInt(yearFilter))
-    if (deptFilter) incQuery = incQuery.eq('department', deptFilter)
-    const { data: incentives } = await incQuery
-
-    // 3. Fetch Seed Funds
-    const { data: rawSeedFunds } = await admin.from('seed_fund_applications').select('applicant_id, created_at, amount_requested').eq('status', 'approved')
-
-    // 4. Fetch Consultancy
-    const { data: rawConsultancies } = await admin.from('consultancy_applications').select('applicant_id, created_at, consultancy_fee').eq('status', 'approved')
-
-    // 5. Fetch Project Grants (Live)
-    const { data: rawProjectGrants } = await admin.from('project_grant_applications').select('applicant_id, created_at, total_proposed_budget').eq('status', 'approved')
-
-    const allApplicantIds = new Set([
-      ...(rawSeedFunds || []).map(s => s.applicant_id),
-      ...(rawConsultancies || []).map(c => c.applicant_id),
-      ...(rawProjectGrants || []).map(g => g.applicant_id)
+    const [
+      submissions,
+      incentives,
+      rawSeedFunds,
+      rawConsultancies,
+      rawProjectGrants,
+      facultyData,
+      legacyPatentsData,
+      legacyPubs,
+      legacySeedFunds,
+      legacyResearchGrants,
+      legacyIncentives,
+      legacyConsultancy,
+      phds,
+      supervisors,
+      scholars,
+      { data: manualStats },
+    ] = await Promise.all([
+      // 1. Submissions (Scopus)
+      all('submissions', 'department, year', q => {
+        q = q.eq('status', 'approved')
+        if (yearFilter) q = q.eq('year', parseInt(yearFilter))
+        if (deptFilter) q = q.eq('department', deptFilter)
+        return q
+      }),
+      // 2. Incentives and Patents
+      all('incentive_applications', 'category, department, year, calculated_amount', q => {
+        q = q.eq('status', 'approved')
+        if (yearFilter) q = q.eq('year', parseInt(yearFilter))
+        if (deptFilter) q = q.eq('department', deptFilter)
+        return q
+      }),
+      // 3. Seed Funds
+      all('seed_fund_applications', 'applicant_id, created_at, amount_requested', q => q.eq('status', 'approved')),
+      // 4. Consultancy
+      all('consultancy_applications', 'applicant_id, created_at, consultancy_fee', q => q.eq('status', 'approved')),
+      // 5. Project Grants (Live)
+      all('project_grant_applications', 'applicant_id, created_at, total_proposed_budget', q => q.eq('status', 'approved')),
+      // Applicant → department lookup (only rows with a user_id can match an applicant)
+      all('master_faculty', 'user_id, dept', q => q.not('user_id', 'is', null)),
+      // 8. Legacy data for completeness
+      all('legacy_patents', 'department, academic_year'),
+      all('legacy_publications', 'department, year, is_duplicate, document_type_report', q => {
+        if (yearFilter) q = q.eq('year', parseInt(yearFilter))
+        if (deptFilter) q = q.ilike('department', deptFilter)
+        return q
+      }),
+      all('legacy_seed_fund_grants', 'dept, academic_year, amount_sanctioned', q => deptFilter ? q.eq('dept', deptFilter) : q),
+      all('research_grants', 'department, academic_year, grant_amount', q => deptFilter ? q.eq('department', deptFilter) : q),
+      all('legacy_incentives', 'department, received_amount, amount_credited_date, submitted_date, date_of_publication, incentive_year', q => deptFilter ? q.eq('department', deptFilter) : q),
+      all('legacy_consultancy', 'department, academic_year, project_date, amount', q => deptFilter ? q.eq('department', deptFilter) : q),
+      // 6. PhD Holders
+      all('master_faculty', 'dept', q => {
+        q = q.eq('type', 'Doctorate')
+        if (deptFilter) q = q.eq('dept', deptFilter)
+        return q
+      }),
+      // Supervisors and Scholars
+      all('legacy_research_supervisors', 'department, academic_year', q => deptFilter ? q.eq('department', deptFilter) : q),
+      all('legacy_research_scholars', 'research_centre, academic_year', q => deptFilter ? q.eq('research_centre', deptFilter) : q),
+      // 7. Manual Stats (static)
+      admin.from('report_manual_stats').select('*').eq('id', 1).maybeSingle(),
     ])
-    
-    let facultyMap: Record<string, string> = {}
-    if (allApplicantIds.size > 0) {
-      const { data: facultyData } = await admin.from('master_faculty').select('user_id, dept').in('user_id', Array.from(allApplicantIds))
-      facultyMap = (facultyData || []).reduce((acc: any, f: any) => {
-        acc[f.user_id] = f.dept || ''
-        return acc
-      }, {})
-    }
+
+    const facultyMap: Record<string, string> = {}
+    for (const f of facultyData) facultyMap[f.user_id] = f.dept || ''
 
     const getYearFromDate = (dateStr: string | null) => {
       if (!dateStr) return null
@@ -91,93 +134,12 @@ export async function GET(request: Request) {
       return true
     })
 
-    // 8. Fetch Legacy Data for completeness
-    const { data: legacyPatentsData } = await admin.from('legacy_patents').select('*')
-    let legacyPatents = legacyPatentsData || []
+    let legacyPatents = legacyPatentsData
     if (deptFilter) legacyPatents = legacyPatents.filter(p => p.department === deptFilter)
     if (yearFilter) legacyPatents = legacyPatents.filter(p => {
       const pYear = p.academic_year ? parseInt(p.academic_year.split('-')[0]) : null
       return pYear === parseInt(yearFilter) || p.academic_year?.includes(yearFilter)
     })
-
-    let legacyPubs: any[] = []
-    let hasMorePubs = true
-    let pagePubs = 0
-    const pageSizePubs = 1000
-
-    while (hasMorePubs) {
-      let query = admin.from('legacy_publications').select('department, year, is_duplicate, document_type_report').range(pagePubs * pageSizePubs, (pagePubs + 1) * pageSizePubs - 1)
-      if (yearFilter) {
-        query = query.eq('year', parseInt(yearFilter))
-      }
-      if (deptFilter) {
-        query = query.ilike('department', deptFilter)
-      }
-      
-      const { data: pageData } = await query
-      if (pageData && pageData.length > 0) {
-        legacyPubs = [...legacyPubs, ...pageData]
-        if (pageData.length < pageSizePubs) {
-          hasMorePubs = false
-        } else {
-          pagePubs++
-        }
-      } else {
-        hasMorePubs = false
-      }
-    }
-
-    let legacySeedQuery = admin.from('legacy_seed_fund_grants').select('dept, academic_year, amount_sanctioned')
-    if (deptFilter) legacySeedQuery = legacySeedQuery.eq('dept', deptFilter)
-    const { data: legacySeedFunds } = await legacySeedQuery
-
-    let legacyGrantQuery = admin.from('research_grants').select('department, academic_year, grant_amount')
-    if (deptFilter) legacyGrantQuery = legacyGrantQuery.eq('department', deptFilter)
-    const { data: legacyResearchGrants } = await legacyGrantQuery
-
-    let legacyIncQuery = admin.from('legacy_incentives').select('department, received_amount, amount_credited_date, submitted_date, date_of_publication, incentive_year')
-    if (deptFilter) legacyIncQuery = legacyIncQuery.eq('department', deptFilter)
-    const { data: legacyIncentives } = await legacyIncQuery
-
-    // Paginate legacy_consultancy to guarantee all rows are fetched regardless
-    // of the PostgREST server-side max_rows setting.
-    let legacyConsultancy: any[] = []
-    {
-      let lcFrom = 0
-      const lcStep = 1000
-      while (true) {
-        let lcQuery = admin
-          .from('legacy_consultancy')
-          .select('department, academic_year, project_date, amount')
-          .range(lcFrom, lcFrom + lcStep - 1)
-        if (deptFilter) lcQuery = lcQuery.eq('department', deptFilter)
-        const { data: lcPage } = await lcQuery
-        if (lcPage && lcPage.length > 0) {
-          legacyConsultancy.push(...lcPage)
-          if (lcPage.length < lcStep) break
-          lcFrom += lcStep
-        } else {
-          break
-        }
-      }
-    }
-
-    // 6. Fetch PhD Holders
-    let phdQuery = admin.from('master_faculty').select('dept').eq('type', 'Doctorate')
-    if (deptFilter) phdQuery = phdQuery.eq('dept', deptFilter)
-    const { data: phds } = await phdQuery
-
-    // Supervisors and Scholars
-    let supQuery = admin.from('legacy_research_supervisors').select('department, academic_year')
-    if (deptFilter) supQuery = supQuery.eq('department', deptFilter)
-    const { data: supervisors } = await supQuery
-
-    let schQuery = admin.from('legacy_research_scholars').select('research_centre, academic_year')
-    if (deptFilter) schQuery = schQuery.eq('research_centre', deptFilter)
-    const { data: scholars } = await schQuery
-
-    // 7. Manual Stats (static)
-    const { data: manualStats } = await admin.from('report_manual_stats').select('*').eq('id', 1).maybeSingle()
 
     // Aggregate Data
     const STANDARD_DEPTS = ['CSE', 'IT', 'ECE', 'EEE', 'MECH', 'CYS', 'AI-DS', 'AI-ML', 'CSBS', 'S&H']

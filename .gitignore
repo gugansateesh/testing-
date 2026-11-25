@@ -28,6 +28,13 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# credentials — never commit
+creds.md
+*.creds.md
+
+# prod RLS policy snapshot (local reference only)
+legacy_policies_db.md
+
 # vercel
 .vercel
 

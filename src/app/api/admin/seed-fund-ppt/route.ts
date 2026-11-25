@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 
 export async function GET(req: Request) {
+  const denied = await adminGuard(req)
+  if (denied) return denied
+
   const supabaseAdmin = createAdminClient()
   try {
     const token = extractToken(req)

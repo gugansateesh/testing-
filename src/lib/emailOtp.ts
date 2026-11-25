@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { Resend } from 'resend'
-import { createAdminClient } from '@/lib/supabase'
+import { createAdminClient, escapeLike } from '@/lib/supabase'
 
 const MAIN_SENDER_NAME = 'QuantumRIMS - Sri Eshwar Research Portal'
 // Using Resend's default sender (no domain verification needed on free plan)
@@ -50,7 +50,7 @@ export async function saveOtp(email: string, otp: string): Promise<void> {
   // 2. Try persisting in auth_otps table
   try {
     const admin = createAdminClient()
-    await admin.from('auth_otps').delete().ilike('email', cleanEmail)
+    await admin.from('auth_otps').delete().ilike('email', escapeLike(cleanEmail))
     await admin.from('auth_otps').insert({
       email: cleanEmail,
       otp,
@@ -112,7 +112,7 @@ export async function verifyOtp(email: string, inputOtp: string): Promise<{ vali
     inMemoryOtpStore.delete(cleanEmail)
     try {
       const admin = createAdminClient()
-      await admin.from('auth_otps').delete().ilike('email', cleanEmail)
+      await admin.from('auth_otps').delete().ilike('email', escapeLike(cleanEmail))
     } catch {}
 
     return { valid: true }
@@ -124,7 +124,7 @@ export async function verifyOtp(email: string, inputOtp: string): Promise<{ vali
     const { data, error } = await admin
       .from('auth_otps')
       .select('*')
-      .ilike('email', cleanEmail)
+      .ilike('email', escapeLike(cleanEmail))
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false })
       .limit(1)
@@ -135,7 +135,7 @@ export async function verifyOtp(email: string, inputOtp: string): Promise<{ vali
     }
 
     if (data.attempts >= 5) {
-      await admin.from('auth_otps').delete().ilike('email', cleanEmail)
+      await admin.from('auth_otps').delete().ilike('email', escapeLike(cleanEmail))
       return { valid: false, reason: 'Too many incorrect attempts. Please request a new code.' }
     }
 
@@ -145,7 +145,7 @@ export async function verifyOtp(email: string, inputOtp: string): Promise<{ vali
     }
 
     // Success! Delete OTP
-    await admin.from('auth_otps').delete().ilike('email', cleanEmail)
+    await admin.from('auth_otps').delete().ilike('email', escapeLike(cleanEmail))
     return { valid: true }
   } catch (err: any) {
     return { valid: false, reason: 'Failed to verify code. Please try again.' }

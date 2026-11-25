@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
-import { getPublicationsFromExcel } from '@/lib/excelParser'
+import { verifyToken, extractToken, requireAdmin } from '@/lib/verifyAuth'
 import { getReportsOverviewStats } from '@/lib/reportStats'
 
 export const dynamic = 'force-dynamic'
@@ -28,6 +27,8 @@ export async function PATCH(request: Request) {
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const auth = await verifyToken(token)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // Editing the manual report figures is admin-only (GET stays open to staff for the portal home)
+  if (!(await requireAdmin(auth))) return NextResponse.json({ error: 'Forbidden: admin only' }, { status: 403 })
 
   try {
     const body = await request.json()

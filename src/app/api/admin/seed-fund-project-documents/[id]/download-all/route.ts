@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import { verifyToken, extractToken } from '@/lib/verifyAuth'
+import { verifyToken, extractToken, adminGuard } from '@/lib/verifyAuth'
 import { PROJECT_DOCUMENT_CHECKLIST } from '@/lib/seedFundProjectDocs'
 import { mergeDocumentsToPdf } from '@/lib/mergeDocumentsToPdf'
 
@@ -60,6 +60,9 @@ async function resolveUrl(raw: string): Promise<string> {
 }
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
+  const denied = await adminGuard(req)
+  if (denied) return denied
+
   const params = await props.params;
   // ── Auth (local JWT, no network round-trip) ─────────────────────────────
   const token = extractToken(req)

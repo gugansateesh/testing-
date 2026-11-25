@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { adminGuard } from '@/lib/verifyAuth'
 import { createAdminClient } from '@/lib/supabase'
 import { parseSpreadsheetRows } from '@/lib/importSpreadsheet'
 import ExcelJS from 'exceljs'
@@ -17,6 +18,9 @@ const SCHOLARS_COLUMN_MAP = {
 };
 
 export async function POST(request: Request) {
+  const denied = await adminGuard(request)
+  if (denied) return denied
+
   try {
     const formData = await request.formData()
     const mode = formData.get('mode') as string || 'append'
