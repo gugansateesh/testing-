@@ -40,14 +40,19 @@ export async function GET(request: Request) {
       query = query.eq('is_phd', true)
     }
 
-    const { data, error } = await query
+    // Rows, contact details and the dropdown metadata are independent —
+    // fetch them concurrently.
+    const [{ data, error }, { data: facultyData }, { data: metaData }] = await Promise.all([
+      query,
+      // Fetch master_faculty to get email and phone
+      admin
+        .from('master_faculty')
+        .select('emp_id, name, email, phone'),
+      // Unique departments and academic years for the filters
+      admin.from('legacy_phd_holders').select('dept, academic_year'),
+    ])
 
     if (error) throw error
-
-    // Fetch master_faculty to get email and phone
-    const { data: facultyData } = await admin
-      .from('master_faculty')
-      .select('emp_id, name, email, phone')
 
     const contactByEmpId = new Map<string, StaffContact>()
     const contactByName = new Map<string, StaffContact>()
@@ -105,13 +110,11 @@ export async function GET(request: Request) {
       }
     })
 
-    // Fetch unique departments for filters
-    const { data: deptData } = await admin.from('legacy_phd_holders').select('dept')
-    const departments = Array.from(new Set(deptData?.map(d => d.dept ? String(d.dept).trim() : '').filter(Boolean))).sort()
+    // Unique departments for filters
+    const departments = Array.from(new Set(metaData?.map(d => d.dept ? String(d.dept).trim() : '').filter(Boolean))).sort()
 
-    // Fetch unique academic years for the dropdown
-    const { data: yearData } = await admin.from('legacy_phd_holders').select('academic_year')
-    let years = Array.from(new Set(yearData?.map(d => d.academic_year).filter(Boolean))).sort((a, b) => String(b).localeCompare(String(a)))
+    // Unique academic years for the dropdown
+    let years = Array.from(new Set(metaData?.map(d => d.academic_year).filter(Boolean))).sort((a, b) => String(b).localeCompare(String(a)))
     
     // Ensure the current year is in the list even if empty
     if (!years.includes(year)) {

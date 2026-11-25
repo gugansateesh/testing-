@@ -17,65 +17,70 @@ export async function GET(request: Request) {
 
   const admin = createAdminClient()
 
-  // Fetch Publications (from legacy_publications by emp_id)
-  const { data: publications } = await admin
-    .from('legacy_publications')
-    .select('id, title, source_title, year, document_type_report, doi, department, authors, link, is_duplicate')
-    .eq('emp_id', empId)
-    .order('year', { ascending: false })
-    .limit(100)
-
-  // Fetch live approved submissions too
-  const { data: livePublications } = await admin
-    .from('submissions')
-    .select('id, title, source_title, year, doc_type_report, doi, department')
-    .eq('submitted_by', auth.id)
-    .eq('status', 'approved')
-    .order('year', { ascending: false })
-
-  // Fetch Patents (from legacy_patents by emp_id — will be empty until patents are mapped)
-  const { data: patents } = await admin
-    .from('legacy_patents')
-    .select('id, title, inventors, status, filed_date, publication_or_grant_number, department')
-    .eq('emp_id', empId)
-    .order('filed_date', { ascending: false })
-    .limit(100)
-
-  // Fetch Incentive Applications (by user id)
-  const { data: incentives } = await admin
-    .from('incentive_applications')
-    .select('id, category, status, calculated_amount, created_at, submissions(id, title, doi)')
-    .eq('applicant_id', auth.id)
-    .order('created_at', { ascending: false })
-    .limit(500)
-
-  // Also fetch the cutoff year setting
-  const { data: cutoffSetting } = await admin.from('app_settings').select('value').eq('key', 'incentive_eligible_from_year').single()
+  // Every section is independent — fetch them all concurrently
+  const [
+    { data: publications },
+    { data: livePublications },
+    { data: patents },
+    { data: incentives },
+    { data: cutoffSetting },
+    { data: seedFunds },
+    { data: consultancy },
+    { data: projectGrants },
+  ] = await Promise.all([
+    // Fetch Publications (from legacy_publications by emp_id)
+    admin
+      .from('legacy_publications')
+      .select('id, title, source_title, year, document_type_report, doi, department, authors, link, is_duplicate')
+      .eq('emp_id', empId)
+      .order('year', { ascending: false })
+      .limit(100),
+    // Fetch live approved submissions too
+    admin
+      .from('submissions')
+      .select('id, title, source_title, year, doc_type_report, doi, department')
+      .eq('submitted_by', auth.id)
+      .eq('status', 'approved')
+      .order('year', { ascending: false }),
+    // Fetch Patents (from legacy_patents by emp_id — will be empty until patents are mapped)
+    admin
+      .from('legacy_patents')
+      .select('id, title, inventors, status, filed_date, publication_or_grant_number, department')
+      .eq('emp_id', empId)
+      .order('filed_date', { ascending: false })
+      .limit(100),
+    // Fetch Incentive Applications (by user id)
+    admin
+      .from('incentive_applications')
+      .select('id, category, status, calculated_amount, created_at, submissions(id, title, doi)')
+      .eq('applicant_id', auth.id)
+      .order('created_at', { ascending: false })
+      .limit(500),
+    // Also fetch the cutoff year setting
+    admin.from('app_settings').select('value').eq('key', 'incentive_eligible_from_year').single(),
+    // Fetch Seed Fund Applications (by user id)
+    admin
+      .from('seed_fund_applications')
+      .select('id, project_title, status, created_at, phase')
+      .eq('applicant_id', auth.id)
+      .order('created_at', { ascending: false })
+      .limit(50),
+    // Fetch Consultancy (by user id — table may not have emp_id yet)
+    admin
+      .from('consultancy_projects')
+      .select('id, title, client_name, amount, status, created_at')
+      .eq('submitted_by', auth.id)
+      .order('created_at', { ascending: false })
+      .limit(50),
+    // Fetch Project Grants (by user id)
+    admin
+      .from('project_grants')
+      .select('id, title, funding_agency, amount, status, created_at')
+      .eq('submitted_by', auth.id)
+      .order('created_at', { ascending: false })
+      .limit(50),
+  ])
   const cutoff = cutoffSetting?.value ? Number(cutoffSetting.value) : undefined
-
-  // Fetch Seed Fund Applications (by user id)
-  const { data: seedFunds } = await admin
-    .from('seed_fund_applications')
-    .select('id, project_title, status, created_at, phase')
-    .eq('applicant_id', auth.id)
-    .order('created_at', { ascending: false })
-    .limit(50)
-
-  // Fetch Consultancy (by user id — table may not have emp_id yet)
-  const { data: consultancy } = await admin
-    .from('consultancy_projects')
-    .select('id, title, client_name, amount, status, created_at')
-    .eq('submitted_by', auth.id)
-    .order('created_at', { ascending: false })
-    .limit(50)
-
-  // Fetch Project Grants (by user id)
-  const { data: projectGrants } = await admin
-    .from('project_grants')
-    .select('id, title, funding_agency, amount, status, created_at')
-    .eq('submitted_by', auth.id)
-    .order('created_at', { ascending: false })
-    .limit(50)
 
   const legacyMapped = (publications || []).map(p => ({ ...p, _source: 'legacy' }))
   

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { verifyToken, extractToken } from '@/lib/verifyAuth'
-import { getPublicationsFromExcel } from '@/lib/excelParser'
 import { getReportsOverviewStats } from '@/lib/reportStats'
 
 export const dynamic = 'force-dynamic'

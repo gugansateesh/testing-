@@ -26,14 +26,16 @@ export async function GET(request: Request) {
     if (year && year !== 'all') query = query.eq('academic_year', year)
     if (dept && dept !== 'all') query = query.ilike('dept', dept.trim())
 
-    const { data, error } = await query
+    // Rows and the complete departments/years list are independent — fetch concurrently
+    const [{ data, error }, { data: allSeedMeta }] = await Promise.all([
+      query,
+      // Build complete departments and years list
+      admin
+        .from('legacy_seed_fund_grants')
+        .select('dept, academic_year')
+        .limit(5000),
+    ])
     if (error) throw error
-
-    // Build complete departments and years list
-    const { data: allSeedMeta } = await admin
-      .from('legacy_seed_fund_grants')
-      .select('dept, academic_year')
-      .limit(5000)
 
     const deptSet = new Set<string>()
     const yearSet = new Set<string>()

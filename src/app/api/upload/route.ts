@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { v2 as cloudinary } from 'cloudinary'
 import { verifyToken, extractToken } from '@/lib/verifyAuth'
-import { createAdminClient } from '@/lib/supabase'
 
 // Configure Cloudinary from env vars (server-only — never sent to browser)
 cloudinary.config({
@@ -20,15 +19,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Try staff auth first (Supabase user token)
-    const adminClient = createAdminClient()
-    const { data: { user }, error: userError } = await adminClient.auth.getUser(token)
-    if (userError || !user) {
-      // Fall back to admin token check
-      const adminAuth = await verifyToken(token)
-      if (!adminAuth) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
+    // Staff and admin tokens are both Supabase JWTs — verify locally
+    // (verifyToken falls back to a remote check only if local verify fails)
+    const auth = await verifyToken(token)
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // ── Parse multipart form ──────────────────────────────────────────────

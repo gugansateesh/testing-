@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { verifyToken, extractToken } from '@/lib/verifyAuth'
 import { createAdminClient } from '@/lib/supabase'
+import { fetchAllRows } from '@/lib/fetchAllRows'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -44,11 +45,15 @@ export async function GET(request: Request) {
       return q
     }
 
-    // Get unique research centres, academic years, and registration years for dropdowns
-    const { data: allScholarsMeta } = await admin
-      .from('legacy_research_scholars')
-      .select('research_centre, academic_year, year_of_registration')
-      .limit(5000)
+    // Dropdown metadata and the filtered rows are independent — fetch concurrently
+    const [{ data: allScholarsMeta }, allData] = await Promise.all([
+      // Get unique research centres, academic years, and registration years for dropdowns
+      admin
+        .from('legacy_research_scholars')
+        .select('research_centre, academic_year, year_of_registration')
+        .limit(5000),
+      fetchAllRows(admin, 'legacy_research_scholars', '*', applyFilters),
+    ])
 
     const deptSet = new Set<string>()
     const yearSet = new Set<string>()
@@ -77,26 +82,6 @@ export async function GET(request: Request) {
       return b.localeCompare(a)
     })
 
-    // Pagination for legacy_research_scholars
-    let allData: any[] = []
-    let from = 0
-    const step = 1000
-    while (true) {
-      let queryPage = applyFilters(
-        admin.from('legacy_research_scholars').select('*').range(from, from + step - 1)
-      )
-      
-      const { data, error } = await queryPage
-      if (error) throw error
-      if (data && data.length > 0) {
-        allData.push(...data)
-        if (data.length < step) break
-        from += step
-      } else {
-        break
-      }
-    }
-    
     // Sort descending by academic year then year_of_registration
     const result = allData.sort((a: any, b: any) => {
       if (a.academic_year !== b.academic_year) return (b.academic_year || '').localeCompare(a.academic_year || '')

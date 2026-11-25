@@ -27,6 +27,7 @@
  */
 
 import { createAdminClient } from '@/lib/supabase'
+import { fetchAllRows } from '@/lib/fetchAllRows'
 
 export interface FacultyAchievement {
   sci_achieved: number
@@ -107,6 +108,14 @@ export async function getFacultyAchievement(
   const admin = createAdminClient()
   const yearInt = parseInt(academic_year, 10)
 
+  // legacy_publications is keyed by emp_id, so it can load while master_faculty is looked up.
+  // (Query builders are lazy; Promise.resolve starts the request now.)
+  const legacyPromise = Promise.resolve(admin
+    .from('legacy_publications')
+    .select('document_type_report')
+    .eq('emp_id', emp_id)
+    .eq('year', yearInt))
+
   // 1. Look up master_faculty to get user_id (for live subs) and name (for legacy fallback)
   const { data: mfRow, error: mfError } = await admin
     .from('master_faculty')
@@ -146,11 +155,7 @@ export async function getFacultyAchievement(
   let unmatchedLegacyCount = 0
   const normalizedName = normalizeName(name)
 
-  const { data: legacyRows, error: legacyError } = await admin
-    .from('legacy_publications')
-    .select('document_type_report')
-    .eq('emp_id', emp_id)
-    .eq('year', yearInt)
+  const { data: legacyRows, error: legacyError } = await legacyPromise
 
   if (legacyError) {
     console.error(`[facultyTargetStats] legacy_publications error for ${emp_id}:`, legacyError.message)
@@ -196,37 +201,40 @@ export async function getFacultyTargetsWithAchievement(
 ): Promise<FacultyTargetWithAchievement[]> {
   const admin = createAdminClient()
   const yearInt = parseInt(academic_year, 10)
+  const legacyAcYear = `${parseInt(academic_year) - 1}-${academic_year}` // e.g. '2025-2026'
 
-  let targets: any[] = []
+  const loadTargets = async (): Promise<any[] | null> => {
+    if (opts.includeNoTarget) {
+      const [{ data: allFaculty }, { data: allTargets }] = await Promise.all([
+        admin.from('master_faculty').select('emp_id, name, dept, user_id'),
+        admin.from('faculty_publication_targets').select('*').eq('academic_year', academic_year),
+      ])
+      const targetsByEmpId = new Map(allTargets?.map(t => [t.emp_id, t]) || [])
 
-  if (opts.includeNoTarget) {
-    const { data: allFaculty } = await admin.from('master_faculty').select('emp_id, name, dept, user_id')
-    const { data: allTargets } = await admin.from('faculty_publication_targets').select('*').eq('academic_year', academic_year)
-    const targetsByEmpId = new Map(allTargets?.map(t => [t.emp_id, t]) || [])
-    
-    targets = allFaculty?.map(mf => {
-      const t = targetsByEmpId.get(mf.emp_id)
-      return {
-        emp_id: mf.emp_id,
-        academic_year,
-        sci_target: t?.sci_target ?? 0,
-        scopus_journal_target: t?.scopus_journal_target ?? 0,
-        scopus_conference_target: t?.scopus_conference_target ?? 0,
-        sci_achieved_static: t?.sci_achieved_static ?? null,
-        scopus_journal_achieved_static: t?.scopus_journal_achieved_static ?? null,
-        scopus_conference_achieved_static: t?.scopus_conference_achieved_static ?? null,
-        student_publication_target: t?.student_publication_target ?? 0,
-        utility_patent_target: t?.utility_patent_target ?? 0,
-        design_patent_target: t?.design_patent_target ?? 0,
-        copyright_target: t?.copyright_target ?? 0,
-        funding_target: t?.funding_target ?? 0,
-        consultancy_target: t?.consultancy_target ?? 0,
-        designation: t?.designation ?? null,
-        faculty_type: t?.faculty_type ?? null,
-        master_faculty: mf
-      }
-    }) || []
-  } else {
+      return allFaculty?.map(mf => {
+        const t = targetsByEmpId.get(mf.emp_id)
+        return {
+          emp_id: mf.emp_id,
+          academic_year,
+          sci_target: t?.sci_target ?? 0,
+          scopus_journal_target: t?.scopus_journal_target ?? 0,
+          scopus_conference_target: t?.scopus_conference_target ?? 0,
+          sci_achieved_static: t?.sci_achieved_static ?? null,
+          scopus_journal_achieved_static: t?.scopus_journal_achieved_static ?? null,
+          scopus_conference_achieved_static: t?.scopus_conference_achieved_static ?? null,
+          student_publication_target: t?.student_publication_target ?? 0,
+          utility_patent_target: t?.utility_patent_target ?? 0,
+          design_patent_target: t?.design_patent_target ?? 0,
+          copyright_target: t?.copyright_target ?? 0,
+          funding_target: t?.funding_target ?? 0,
+          consultancy_target: t?.consultancy_target ?? 0,
+          designation: t?.designation ?? null,
+          faculty_type: t?.faculty_type ?? null,
+          master_faculty: mf
+        }
+      }) || []
+    }
+
     // Load only those with targets
     const { data: dbTargets, error: targetsError } = await admin
       .from('faculty_publication_targets')
@@ -253,10 +261,61 @@ export async function getFacultyTargetsWithAchievement(
 
     if (targetsError) {
       console.error('[facultyTargetStats] Error loading targets:', targetsError.message)
-      return []
+      return null
     }
-    targets = dbTargets || []
+    return dbTargets || []
   }
+
+  // None of the achievement sources depend on the target rows (only on the
+  // academic year), so every query runs concurrently with the target load.
+  // Rows are matched to targets in memory below.
+  const [
+    loadedTargets,
+    subsRes,
+    legacyPubRows,
+    { data: patentRows },
+    { data: consultRows },
+    { data: seedRows },
+    { data: studentPubRows },
+  ] = await Promise.all([
+    loadTargets(),
+    // 2a. All approved submissions in this year (filtered to target faculty in memory)
+    fetchAllRows(admin, 'submissions', 'submitted_by, doc_type_report', q =>
+      q.eq('status', 'approved').eq('year', yearInt)
+    ).then(data => ({ data, error: null as any }), error => ({ data: [] as any[], error })),
+    // 2b. All legacy_publications for this year with an emp_id
+    fetchAllRows(admin, 'legacy_publications', 'emp_id, document_type_report', q =>
+      q.eq('year', yearInt).not('emp_id', 'is', null)
+    ).catch((legacyError: any) => {
+      console.error('[facultyTargetStats] Batch legacy error:', legacyError.message)
+      return [] as any[]
+    }),
+    // 4a. Patents (Utility & Design)
+    admin
+      .from('legacy_patents')
+      .select('inventors, patent_type, emp_id, faculty_name')
+      .eq('academic_year', legacyAcYear),
+    // 4b. Consultancy
+    admin
+      .from('legacy_consultancy')
+      .select('faculty_name, amount')
+      .eq('academic_year', legacyAcYear),
+    // 4c. Seed Fund Grants
+    admin
+      .from('legacy_seed_fund_grants')
+      .select('faculty_name, amount_sanctioned')
+      .eq('academic_year', legacyAcYear),
+    // 4d. Student Publications
+    admin
+      .from('legacy_publications')
+      .select('emp_id')
+      .eq('year', parseInt(academic_year))
+      .eq('document_type_report', 'Student Publication')
+      .not('emp_id', 'is', null),
+  ])
+
+  if (!loadedTargets) return []
+  const targets = loadedTargets
 
   if (targets.length === 0) return []
 
@@ -311,68 +370,33 @@ export async function getFacultyTargetsWithAchievement(
     if (!hasStatic) nameToEmpId.set(normalizeName(mf.name), t.emp_id)
   }
 
-  const userIds = [...userIdToEmpId.keys()].filter(Boolean)
-
-  // 2a. Bulk-fetch all approved submissions for these user_ids in this year
-  if (userIds.length > 0) {
-    const { data: subs, error: subsError } = await admin
-      .from('submissions')
-      .select('submitted_by, doc_type_report')
-      .in('submitted_by', userIds)
-      .eq('status', 'approved')
-      .eq('year', yearInt)
-
-    if (subsError) {
-      console.error('[facultyTargetStats] Batch submissions error:', subsError.message)
-    } else {
-      for (const sub of subs ?? []) {
-        const empId = userIdToEmpId.get(sub.submitted_by)
-        if (!empId) continue
-        const cat = classifyDocType(sub.doc_type_report)
-        if (!cat) continue
-        const entry = targetMap.get(empId)
-        if (entry) entry.achievement[`${cat}_achieved` as keyof FacultyAchievement]  = (entry.achievement[`${cat}_achieved` as keyof FacultyAchievement] as number) + 1
-      }
+  // 2a. Approved submissions for these user_ids in this year
+  if (subsRes.error) {
+    console.error('[facultyTargetStats] Batch submissions error:', subsRes.error.message)
+  } else {
+    for (const sub of subsRes.data) {
+      const empId = userIdToEmpId.get(sub.submitted_by)
+      if (!empId) continue
+      const cat = classifyDocType(sub.doc_type_report)
+      if (!cat) continue
+      const entry = targetMap.get(empId)
+      if (entry) entry.achievement[`${cat}_achieved` as keyof FacultyAchievement]  = (entry.achievement[`${cat}_achieved` as keyof FacultyAchievement] as number) + 1
     }
   }
 
-  // 2b. Bulk-fetch all legacy_publications for this year
-  // We fetch all rows and match by normalized name against our map
-  // (Fetched in pages of 1000 to handle large datasets)
-  let legacyPage = 0
-  const legacyPageSize = 1000
-  let hasMoreLegacy = true
+  // 2b. legacy_publications for this year, matched by emp_id
+  for (const row of legacyPubRows) {
+    const empId = row.emp_id
+    if (!empId) continue // Not in our target set
 
-  while (hasMoreLegacy) {
-    const { data: legacyRows, error: legacyError } = await admin
-      .from('legacy_publications')
-      .select('emp_id, document_type_report')
-      .eq('year', yearInt)
-      .not('emp_id', 'is', null)
-      .range(legacyPage * legacyPageSize, (legacyPage + 1) * legacyPageSize - 1)
+    const cat = classifyDocType(row.document_type_report)
+    if (!cat) continue // Student Publication etc.
 
-    if (legacyError) {
-      console.error('[facultyTargetStats] Batch legacy error:', legacyError.message)
-      break
+    const entry = targetMap.get(empId)
+    if (entry) {
+      entry.achievement[`${cat}_achieved` as keyof FacultyAchievement] = (entry.achievement[`${cat}_achieved` as keyof FacultyAchievement] as number) + 1
+      entry.achievement.legacy_matched++
     }
-    if (!legacyRows || legacyRows.length === 0) { hasMoreLegacy = false; break }
-
-    for (const row of legacyRows) {
-      const empId = row.emp_id
-      if (!empId) continue // Not in our target set
-
-      const cat = classifyDocType(row.document_type_report)
-      if (!cat) continue // Student Publication etc.
-
-      const entry = targetMap.get(empId)
-      if (entry) {
-        entry.achievement[`${cat}_achieved` as keyof FacultyAchievement] = (entry.achievement[`${cat}_achieved` as keyof FacultyAchievement] as number) + 1
-        entry.achievement.legacy_matched++
-      }
-    }
-
-    if (legacyRows.length < legacyPageSize) hasMoreLegacy = false
-    else legacyPage++
   }
 
   // 3. Compute totals and met_target flags
@@ -384,17 +408,26 @@ export async function getFacultyTargetsWithAchievement(
     entry.met_target = a.total_achieved >= entry.total_target && entry.total_target > 0
   }
 
-  // 4. Fetch extended achievements (patents, consultancy, seed fund, student pubs)
-  const legacyAcYear = `${parseInt(academic_year) - 1}-${academic_year}` // e.g. '2025-2026'
+  // 4. Extended achievements (patents, consultancy, seed fund, student pubs)
   const allEntries = [...targetMap.values()]
-  const allNames = allEntries.map(e => e.name)
+
+  // First entry per normalized name (same result as allEntries.find(...))
+  const firstEntryByName = new Map<string, FacultyTargetWithAchievement>()
+  // Entries per name with a leading title stripped, for inventor-line matching
+  const stripTitle = (n: string) => n.replace(/^(dr\.|mr\.|ms\.|prof\.)\s*/i, '')
+  const entriesByStrippedName = new Map<string, FacultyTargetWithAchievement[]>()
+  for (const e of allEntries) {
+    const norm = normalizeName(e.name)
+    if (!firstEntryByName.has(norm)) firstEntryByName.set(norm, e)
+    const stripped = stripTitle(norm)
+    const list = entriesByStrippedName.get(stripped)
+    if (list) list.push(e)
+    else entriesByStrippedName.set(stripped, [e])
+  }
+  const entryForName = (norm: string) =>
+    targetMap.get(nameToEmpId.get(norm) ?? '') ?? firstEntryByName.get(norm)
 
   // 4a. Patents (Utility & Design) — split by patent_type, match by emp_id / faculty_name or inventors field
-  const { data: patentRows } = await admin
-    .from('legacy_patents')
-    .select('inventors, patent_type, emp_id, faculty_name')
-    .eq('academic_year', legacyAcYear)
-
   if (patentRows) {
     for (const pat of patentRows) {
       const pType = (pat.patent_type || 'Utility') as string
@@ -410,9 +443,7 @@ export async function getFacultyTargetsWithAchievement(
 
       // 2. Match by faculty_name if present
       if (pat.faculty_name) {
-        const normFac = normalizeName(pat.faculty_name)
-        const entry = targetMap.get([...nameToEmpId.entries()].find(([k]) => k === normFac)?.[1] ?? '') ??
-          allEntries.find(e => normalizeName(e.name) === normFac)
+        const entry = entryForName(normalizeName(pat.faculty_name))
         if (entry) {
           if (pType === 'Utility') entry.achievement.utility_patent_achieved++
           else if (pType === 'Design') entry.achievement.design_patent_achieved++
@@ -421,15 +452,16 @@ export async function getFacultyTargetsWithAchievement(
         }
       }
 
-      // 3. Fallback: match by inventors field lines
+      // 3. Fallback: match by inventors field lines. A faculty member matches
+      // when any inventor line equals their name (ignoring a leading title);
+      // each matched faculty member is counted once per patent.
       if (!pat.inventors) continue
-      const inventorLines = pat.inventors.split('\n').map((s: string) => normalizeName(s))
+      const matched = new Set<FacultyTargetWithAchievement>()
+      for (const line of pat.inventors.split('\n')) {
+        for (const entry of entriesByStrippedName.get(stripTitle(normalizeName(line))) ?? []) matched.add(entry)
+      }
       for (const entry of allEntries) {
-        const norm = normalizeName(entry.name)
-        // Check if any inventor line exactly matches the faculty name
-        const matched = inventorLines.some((inv: string) => inv === norm ||
-          inv.replace(/^(dr\.|mr\.|ms\.|prof\.)\s*/i, '') === norm.replace(/^(dr\.|mr\.|ms\.|prof\.)\s*/i, ''))
-        if (!matched) continue
+        if (!matched.has(entry)) continue
         if (pType === 'Utility') entry.achievement.utility_patent_achieved++
         else if (pType === 'Design') entry.achievement.design_patent_achieved++
         else if (pType === 'Copyright') entry.achievement.copyright_achieved++
@@ -438,42 +470,22 @@ export async function getFacultyTargetsWithAchievement(
   }
 
   // 4b. Consultancy — match by faculty_name
-  const { data: consultRows } = await admin
-    .from('legacy_consultancy')
-    .select('faculty_name, amount')
-    .eq('academic_year', legacyAcYear)
-
   if (consultRows) {
     for (const row of consultRows) {
-      const norm = normalizeName(row.faculty_name ?? '')
-      const entry = targetMap.get([...nameToEmpId.entries()].find(([k]) => k === norm)?.[1] ?? '') ??
-        allEntries.find(e => normalizeName(e.name) === norm)
+      const entry = entryForName(normalizeName(row.faculty_name ?? ''))
       if (entry) entry.achievement.consultancy_achieved += (row.amount ?? 0)
     }
   }
 
   // 4c. Seed Fund Grants — match by faculty_name
-  const { data: seedRows } = await admin
-    .from('legacy_seed_fund_grants')
-    .select('faculty_name, amount_sanctioned')
-    .eq('academic_year', legacyAcYear)
-
   if (seedRows) {
     for (const row of seedRows) {
-      const norm = normalizeName(row.faculty_name ?? '')
-      const entry = allEntries.find(e => normalizeName(e.name) === norm)
+      const entry = firstEntryByName.get(normalizeName(row.faculty_name ?? ''))
       if (entry) entry.achievement.funding_achieved += (row.amount_sanctioned ?? 0)
     }
   }
 
   // 4d. Student Publications — from legacy_publications, category = 'Student Publication'
-  const { data: studentPubRows } = await admin
-    .from('legacy_publications')
-    .select('emp_id')
-    .eq('year', parseInt(academic_year))
-    .eq('document_type_report', 'Student Publication')
-    .not('emp_id', 'is', null)
-
   if (studentPubRows) {
     for (const row of studentPubRows) {
       const entry = targetMap.get(row.emp_id)
@@ -502,21 +514,22 @@ export async function getTargetCompletionSummary(academic_year: string): Promise
 }> {
   const admin = createAdminClient()
 
-  // Total faculty count
-  const { count: totalFaculty } = await admin
-    .from('master_faculty')
-    .select('*', { count: 'exact', head: true })
-
-  // Faculty with targets this year
-  const { count: withTarget } = await admin
-    .from('faculty_publication_targets')
-    .select('*', { count: 'exact', head: true })
-    .eq('academic_year', academic_year)
+  const [{ count: totalFaculty }, { count: withTarget }, all] = await Promise.all([
+    // Total faculty count
+    admin
+      .from('master_faculty')
+      .select('*', { count: 'exact', head: true }),
+    // Faculty with targets this year
+    admin
+      .from('faculty_publication_targets')
+      .select('*', { count: 'exact', head: true })
+      .eq('academic_year', academic_year),
+    // Get all achievements to count met
+    getFacultyTargetsWithAchievement(academic_year),
+  ])
 
   const noTarget = (totalFaculty ?? 0) - (withTarget ?? 0)
 
-  // Get all achievements to count met
-  const all = await getFacultyTargetsWithAchievement(academic_year)
   const met = all.filter(f => f.met_target).length
   const total = all.length
   const pct = total > 0 ? Math.round((met / total) * 100) : 0
